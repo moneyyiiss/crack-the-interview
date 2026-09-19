@@ -1,0 +1,168 @@
+export default {
+  id: 'concurrency',
+  title: 'Multithreading & Concurrency',
+  color: '#D97706',
+  topics: [
+    {
+      title: 'Creating Threads: extends Thread vs implements Runnable',
+      points: [
+        'Two classic ways to define a thread\'s work: extend Thread and override run(), or implement Runnable and pass it to a Thread\'s constructor.',
+        'implements Runnable is generally preferred — Java has single inheritance, so extending Thread burns your one superclass slot, while Runnable leaves it free and cleanly separates "the task" from "the thread that runs it".',
+        'Calling thread.start() creates a new OS-level thread and eventually calls run() on it; calling thread.run() directly just executes run() as a normal method call on the current thread — no new thread is created.',
+        'Since Java 8, a Runnable (a functional interface with one abstract method, run()) can be supplied as a lambda instead of an anonymous class.',
+        'Starting the same Thread object twice (start() called again after it has already run) throws IllegalThreadStateException — a Thread object is single-use.',
+      ],
+      qa: [{ q: 'What actually happens if you call thread.run() instead of thread.start()?', a: 'run() executes synchronously on the CALLING thread, just like any normal method call — no new thread is spawned, so you lose all concurrency benefits while the code still "works" in the sense that it produces output, which makes this an easy bug to miss.' }],
+      code: 'class MyThread extends Thread {\n    public void run() { System.out.println("via extends Thread"); }\n}\n\nclass MyTask implements Runnable {\n    public void run() { System.out.println("via implements Runnable"); }\n}\n\nnew MyThread().start();\nnew Thread(new MyTask()).start();\nnew Thread(() -> System.out.println("via lambda Runnable")).start();  // Java 8+\n\nThread t = new Thread(() -> {});\nt.start();\n// t.start();   // throws IllegalThreadStateException — already started once',
+      flow: { type: 'compare', columns: [
+        { title: 'extends Thread', points: ['Uses up single inheritance', 'Less flexible'] },
+        { title: 'implements Runnable', points: ['Preferred', 'Task separate from thread', 'Works with lambdas'] },
+      ] },
+    },
+    {
+      title: 'Thread Basics & Lifecycle',
+      points: [
+        'Create a thread by extending Thread (override run()) or, preferably, implementing Runnable and passing it to a Thread (avoids single-inheritance limits).',
+        'Lifecycle states: NEW → RUNNABLE → (BLOCKED/WAITING/TIMED_WAITING) → TERMINATED.',
+        'start() actually spawns a new OS thread and calls run() on it; calling run() directly just executes it on the current thread — no concurrency.',
+        'Thread.sleep(ms) pauses the current thread without releasing any locks it holds; join() makes the calling thread wait for another thread to finish.',
+        'A thread\'s priority (1-10) is only a hint to the OS scheduler — never rely on it for correctness.',
+      ],
+      qa: [],
+      code: 'class MyTask implements Runnable {\n    public void run() { System.out.println("running in: " + Thread.currentThread().getName()); }\n}\nThread t = new Thread(new MyTask());\nt.start();     // NEW -> RUNNABLE\nt.join();      // main thread waits here until t finishes -> TERMINATED',
+      flow: { type: 'lifecycle', states: ['NEW', 'RUNNABLE', 'BLOCKED / WAITING', 'TERMINATED'] },
+    },
+    {
+      title: 'Thread Priority & Daemon Threads',
+      points: [
+        'setPriority(int) ranges from Thread.MIN_PRIORITY (1) to Thread.MAX_PRIORITY (10), default NORM_PRIORITY (5) — it is only a scheduling hint, the JVM/OS is free to ignore it entirely.',
+        'A daemon thread (setDaemon(true), called before start()) is a background "helper" thread the JVM does not wait for — the JVM exits as soon as all non-daemon (user) threads finish, killing any remaining daemon threads abruptly.',
+        'Garbage collection itself runs on daemon threads — a classic real example of a background task that should never block JVM shutdown.',
+        'You cannot change a thread to/from daemon status after it has already started — calling setDaemon() post-start() throws IllegalThreadStateException.',
+      ],
+      qa: [{ q: 'Why might a program seem to "hang" and never exit, and what commonly causes it?', a: 'The JVM waits for every non-daemon (user) thread to finish before exiting; a forgotten background worker thread that was never marked as a daemon (and never explicitly stopped) will keep the whole JVM alive indefinitely.' }],
+      code: 'Thread worker = new Thread(() -> {\n    while (true) { /* background housekeeping */ }\n});\nworker.setDaemon(true);   // must be called BEFORE start()\nworker.start();\n// JVM can exit even while this daemon thread is still looping,\n// as long as no non-daemon threads remain',
+      flow: { type: 'compare', columns: [
+        { title: 'User thread', points: ['JVM waits for it', 'Default for new Thread()'] },
+        { title: 'Daemon thread', points: ['JVM does not wait', 'Killed abruptly on shutdown', 'e.g. GC thread'] },
+      ] },
+    },
+    {
+      title: 'synchronized & Locks',
+      points: [
+        'synchronized (on a method or block) ensures only one thread executes that critical section on a given object/lock at a time — prevents race conditions.',
+        'Every object in Java has an intrinsic lock (monitor); synchronized(this) or a synchronized instance method both lock on the same object.',
+        'static synchronized methods lock on the Class object itself, not on any instance — a separate lock from instance-level synchronization.',
+        'ReentrantLock (java.util.concurrent.locks) offers more control than synchronized: tryLock() with timeout, interruptible waiting, and fairness policies — but you must remember to unlock() in a finally block.',
+        'A synchronized block is reentrant — the same thread can re-acquire a lock it already holds without deadlocking itself.',
+      ],
+      qa: [],
+      code: 'class Counter {\n    private int count = 0;\n    public synchronized void increment() { count++; }   // locks on "this"\n}\n\nReentrantLock lock = new ReentrantLock();\nlock.lock();\ntry {\n    // critical section\n} finally {\n    lock.unlock();   // MUST be in finally, or a locked lock leaks forever on exception\n}',
+      flow: { type: 'pipeline', steps: ['Thread A acquires lock', 'Thread B waits', 'A releases lock', 'B acquires lock'] },
+    },
+    {
+      title: 'volatile & Atomic Classes',
+      points: [
+        'volatile guarantees visibility — a write by one thread is immediately visible to other threads (no CPU-cache staleness) — but does NOT guarantee atomicity for compound operations like i++.',
+        'volatile prevents instruction reordering around that variable (a memory barrier), which matters for the classic double-checked-locking singleton pattern.',
+        'Atomic classes (AtomicInteger, AtomicLong, AtomicReference) provide lock-free, thread-safe compound operations (incrementAndGet(), compareAndSet()) using CPU-level compare-and-swap (CAS) instructions.',
+        'volatile alone is not enough for "read-modify-write" operations (like a counter) — use an Atomic class or synchronization instead.',
+      ],
+      qa: [{ q: 'Why does volatile int counter; counter++; still have a race condition?', a: 'counter++ is really three steps (read, increment, write) — volatile only guarantees each individual read/write is visible across threads, not that the whole read-modify-write sequence happens atomically as one uninterruptible unit.' }],
+      code: 'private volatile boolean running = true;   // visibility guaranteed across threads\n\nprivate AtomicInteger counter = new AtomicInteger(0);\npublic void increment() {\n    counter.incrementAndGet();   // atomic — CAS-based, no lock needed\n}\n// volatile boolean stop-flags: fine.\n// volatile int counter++ under concurrent writers: NOT fine — use AtomicInteger',
+      flow: { type: 'compare', columns: [
+        { title: 'volatile', points: ['Visibility only', 'No atomicity for i++', 'Cheap'] },
+        { title: 'Atomic classes', points: ['CAS-based', 'Atomic compound ops', 'Lock-free'] },
+      ] },
+    },
+    {
+      title: 'wait/notify vs the Executor Framework',
+      points: [
+        'wait()/notify()/notifyAll() (on Object, used inside a synchronized block) are the low-level primitives for threads to coordinate — wait() releases the lock and pauses, notify() wakes one waiting thread.',
+        'ExecutorService (from java.util.concurrent) is the modern, higher-level way to manage a pool of worker threads instead of manually creating/starting Thread objects.',
+        'Executors.newFixedThreadPool(n) / newCachedThreadPool() / newSingleThreadExecutor() are common factory methods for different pooling strategies.',
+        'submit(Callable) returns a Future you can use to get a result or cancel the task; execute(Runnable) is fire-and-forget.',
+        'Always shutdown() (or shutdownNow()) an ExecutorService when done, or its threads keep the JVM alive indefinitely.',
+      ],
+      qa: [],
+      code: 'ExecutorService pool = Executors.newFixedThreadPool(4);\nFuture<Integer> future = pool.submit(() -> 2 + 2);\ntry {\n    System.out.println(future.get());   // blocks until result is ready -> 4\n} catch (Exception e) { }\npool.shutdown();   // important — otherwise the pool\'s threads never die',
+      flow: { type: 'pipeline', steps: ['submit(task)', 'thread pool picks a worker', 'task runs', 'Future.get() result'] },
+    },
+    {
+      title: 'Common Concurrency Interview Traps',
+      points: [
+        'Race condition — two threads access shared mutable state without synchronization, and the outcome depends on timing.',
+        'A thread-safe class is not automatically safe when combined with other operations (e.g. check-then-act on a synchronized collection needs its own external lock).',
+        "Immutable objects are always thread-safe — no synchronization needed if nothing can change after construction.",
+        'Thread.stop() is deprecated and dangerous (can leave shared state in a corrupt half-updated state) — use a volatile flag or interrupt() instead to signal a thread to stop.',
+      ],
+      qa: [],
+      code: 'private volatile boolean stopRequested = false;\npublic void run() {\n    while (!stopRequested) { /* work */ }\n}\npublic void requestStop() { stopRequested = true; }   // safe cooperative shutdown\n// Thread.stop() -> deprecated, can corrupt shared state mid-update',
+      flow: { type: 'grid', items: [
+        { label: 'Race condition', sub: 'unsynchronized shared state' },
+        { label: 'Immutability', sub: 'always thread-safe' },
+        { label: 'Cooperative stop', sub: 'volatile flag, not Thread.stop()' },
+      ] },
+    },
+    {
+      title: 'Callable, Future & CompletableFuture',
+      points: [
+        'Callable<V> is like Runnable but can return a value and throw a checked exception (call() vs run()).',
+        'Future<V> represents the pending result of an asynchronous computation — get() blocks until it\'s ready (optionally with a timeout), isDone()/cancel() let you check/abort.',
+        'CompletableFuture (Java 8+) supports non-blocking composition: thenApply(), thenCombine(), thenCompose() chain async steps without manually blocking on get().',
+        'CompletableFuture.supplyAsync(() -> ...) runs work on the common ForkJoinPool by default, or a custom Executor if you pass one in.',
+      ],
+      qa: [],
+      code: 'CompletableFuture<Integer> cf = CompletableFuture\n    .supplyAsync(() -> 10)\n    .thenApply(x -> x * 2)\n    .thenApply(x -> x + 1);\n\ncf.thenAccept(result -> System.out.println("Result: " + result));   // 21, non-blocking chain',
+      flow: { type: 'pipeline', steps: ['supplyAsync()', 'thenApply()', 'thenApply()', 'thenAccept()'] },
+    },
+    {
+      title: 'Deadlock, Livelock & Starvation',
+      points: [
+        'Deadlock — two or more threads each hold a lock the other needs, and neither ever releases — classic cause: acquiring multiple locks in inconsistent order across threads.',
+        'Livelock — threads keep changing state in response to each other but make no actual progress (like two people repeatedly stepping aside for each other in a hallway).',
+        'Starvation — a thread is perpetually denied access to a resource because other threads keep getting priority (e.g. always losing out to higher-priority threads).',
+        'Prevention: always acquire multiple locks in a fixed, consistent global order across all threads, or use tryLock() with a timeout to back off instead of blocking forever.',
+      ],
+      qa: [{ q: 'What is the classic fix for a deadlock caused by inconsistent lock ordering?', a: 'Establish a single, globally-agreed order for acquiring locks (e.g. always lock the object with the smaller ID first) — if every thread acquires multiple locks in the same order, a circular-wait condition can never form.' }],
+      code: '// DEADLOCK-PRONE: threads lock in opposite order\n// Thread 1: synchronized(lockA) { synchronized(lockB) { ... } }\n// Thread 2: synchronized(lockB) { synchronized(lockA) { ... } }\n\n// FIX: always acquire in the same global order (e.g. by identity hash / fixed ID)\nObject first = System.identityHashCode(lockA) < System.identityHashCode(lockB) ? lockA : lockB;\nObject second = (first == lockA) ? lockB : lockA;\nsynchronized (first) {\n    synchronized (second) { /* safe — consistent order everywhere */ }\n}',
+      flow: { type: 'grid', items: [
+        { label: 'Deadlock', sub: 'circular wait, frozen' },
+        { label: 'Livelock', sub: 'busy, no progress' },
+        { label: 'Starvation', sub: 'never gets a turn' },
+      ] },
+    },
+    {
+      title: 'Thread Pool Sizing & Executors Deep Dive',
+      points: [
+        'ThreadPoolExecutor is the class behind most Executors factory methods — configurable with corePoolSize, maximumPoolSize, keepAliveTime, and a work queue.',
+        'CPU-bound tasks: size the pool close to Runtime.getRuntime().availableProcessors() — more threads than cores just adds context-switching overhead.',
+        'I/O-bound tasks (waiting on network/disk) benefit from a larger pool than the core count, since threads spend most of their time blocked/waiting, not competing for CPU.',
+        'An unbounded work queue (like the default in newFixedThreadPool via LinkedBlockingQueue) can hide a slow-consumer problem by silently growing memory usage instead of ever rejecting/backpressuring.',
+        'ForkJoinPool (used by parallelStream() and CompletableFuture by default) is optimized for divide-and-conquer, work-stealing workloads rather than plain independent tasks.',
+      ],
+      qa: [{ q: 'Why might newFixedThreadPool(10) be a poor choice for a slow, I/O-heavy service under heavy load?', a: 'Its default unbounded LinkedBlockingQueue means tasks pile up in memory indefinitely instead of applying backpressure or rejecting excess work, which can eventually cause an OutOfMemoryError instead of a controlled failure.' }],
+      code: 'ThreadPoolExecutor pool = new ThreadPoolExecutor(\n    4,                              // corePoolSize\n    8,                              // maximumPoolSize\n    30, TimeUnit.SECONDS,           // keepAliveTime for idle extra threads\n    new ArrayBlockingQueue<>(100),  // bounded queue — provides backpressure\n    new ThreadPoolExecutor.CallerRunsPolicy()   // rejection policy when full\n);',
+      flow: { type: 'compare', columns: [
+        { title: 'CPU-bound', points: ['Pool size ≈ core count', 'More threads = worse'] },
+        { title: 'I/O-bound', points: ['Pool size > core count', 'Threads mostly waiting'] },
+      ] },
+    },
+    {
+      title: 'ThreadLocal',
+      points: [
+        'ThreadLocal<T> gives each thread its own independent copy of a variable — reads/writes on one thread never affect another thread\'s copy.',
+        'Common use: storing per-request context (a database connection, a logged-in user, a request ID for logging) in a web server without passing it through every method signature.',
+        'get() lazily initializes via an overridden initialValue() (or withInitial(Supplier) since Java 8) the first time it\'s called on a given thread.',
+        'In thread-pooled environments, ALWAYS call remove() when done (e.g. in a finally block) — otherwise stale data leaks into the next task that reuses the same pooled thread, a very common production bug.',
+      ],
+      qa: [{ q: 'Why is failing to call ThreadLocal.remove() especially dangerous in a thread-pooled server?', a: "Pooled threads are reused across many requests; if a ThreadLocal isn't cleared, the NEXT unrelated request handled by that same physical thread can accidentally read stale data (e.g. a previous user's identity) left over from an earlier request." }],
+      code: 'private static final ThreadLocal<SimpleDateFormat> FORMATTER =\n    ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));   // one instance PER thread\n\ntry {\n    String formatted = FORMATTER.get().format(new Date());\n} finally {\n    FORMATTER.remove();   // crucial in pooled-thread environments — prevents leaks\n}',
+      flow: { type: 'grid', items: [
+        { label: 'Thread A', sub: "own copy of ThreadLocal" },
+        { label: 'Thread B', sub: "own copy of ThreadLocal" },
+        { label: 'Thread C', sub: "own copy of ThreadLocal" },
+      ] },
+    },
+  ],
+};
