@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Java Interview Prep</title>
+<meta name="description" content="A complete, checklist-style Java interview prep companion — quick revision points, common interview questions, and progress tracking, all in one page." />
+<style>
+  :root{
+    --bg:#0f1116;
+    --panel:#161923;
+    --panel2:#1c202c;
+    --border:#2a2f3d;
+    --text:#e8eaf0;
+    --muted:#9aa1b5;
+    --accent:#4f7cff;
+    --accent-soft:rgba(79,124,255,0.15);
+    --good:#2ecc71;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  a{color:inherit;}
+  .app{display:flex;min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    width:290px;
+    flex-shrink:0;
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    padding:20px 14px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    padding:4px 10px 18px 10px;
+    font-weight:700;font-size:18px;
+  }
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);}
+  .progress-box{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    margin:0 6px 18px 6px;
+  }
+  .progress-box .label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
+  .progress-bar{height:8px;border-radius:5px;background:var(--border);overflow:hidden;}
+  .progress-bar > div{height:100%;background:linear-gradient(90deg,var(--accent),#8a5cff);transition:width .3s ease;}
+  .cat-list{list-style:none;margin:0;padding:0;}
+  .cat-item{margin-bottom:2px;}
+  .cat-btn{
+    width:100%;text-align:left;background:none;border:none;color:var(--text);
+    padding:10px 12px;border-radius:9px;cursor:pointer;font-size:14px;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .cat-btn:hover{background:var(--panel2);}
+  .cat-btn.active{background:var(--accent-soft);color:#cdd8ff;font-weight:600;}
+  .cat-btn .swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .cat-btn .count{font-size:11px;color:var(--muted);font-weight:400;}
+
+  /* Main */
+  .main{flex:1;min-width:0;padding:32px 40px 80px;max-width:920px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .topbar h1{font-size:26px;margin:0;}
+  .topbar .sub{color:var(--muted);font-size:14px;margin-top:4px;}
+  .mode-toggle{
+    display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:3px;
+  }
+  .mode-toggle button{
+    border:none;background:none;color:var(--muted);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
+  }
+  .mode-toggle button.active{background:var(--accent);color:#fff;}
+
+  .topic-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px 22px;margin-bottom:16px;
+  }
+  .topic-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .topic-title{font-size:17px;font-weight:700;margin:0 0 10px 0;}
+  .done-check{
+    display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--muted);font-size:12px;user-select:none;flex-shrink:0;
+  }
+  .done-check input{accent-color:var(--good);width:16px;height:16px;cursor:pointer;}
+  .topic-card.done{border-color:rgba(46,204,113,0.4);}
+  .topic-card.done .topic-title{color:#c7f5da;}
+  ul.points{margin:0;padding-left:20px;}
+  ul.points li{margin-bottom:7px;color:#d6d9e4;font-size:14.5px;}
+  ul.points li code, .qa code{
+    background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px;
+  }
+  .qa-block{margin-top:14px;padding-top:14px;border-top:1px dashed var(--border);}
+  .qa-item{margin-bottom:10px;}
+  .qa-q{font-weight:600;color:#cdd8ff;font-size:14px;margin-bottom:3px;}
+  .qa-a{color:var(--muted);font-size:13.5px;}
+
+  .cat-header{margin-bottom:18px;}
+  .cat-header h2{font-size:22px;margin:0 0 4px 0;}
+  .cat-header .meta{color:var(--muted);font-size:13px;}
+
+  .cheat-list{list-style:none;margin:0;padding:0;}
+  .cheat-list li{
+    background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:12px 16px;margin-bottom:8px;font-size:14.5px;color:#d6d9e4;
+  }
+
+  footer.note{margin-top:30px;color:var(--muted);font-size:12px;}
+
+  @media (max-width: 860px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%;height:auto;position:relative;border-right:none;border-bottom:1px solid var(--border);}
+    .main{padding:22px 16px 60px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="dot"></span> JavaPrep</div>
+    <div class="progress-box">
+      <div class="label"><span>Progress</span><span id="progressText">0%</span></div>
+      <div class="progress-bar"><div id="progressFill" style="width:0%"></div></div>
+    </div>
+    <ul class="cat-list" id="catList"></ul>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">Java Interview Prep</h1>
+        <div class="sub" id="pageSub">Pick a topic on the left, or switch to Quick Revision to scan every point at once.</div>
+      </div>
+      <div class="mode-toggle">
+        <button id="modeDetail" class="active">Detailed</button>
+        <button id="modeRevision">Quick Revision</button>
+      </div>
+    </div>
+    <div id="content"></div>
+    <footer class="note">Tick "done" on a topic once you've revised it — your progress is saved in this browser.</footer>
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  const STORAGE_KEY = "javaprep_done_v1";
+  const done = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+  function saveDone(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }
+  function topicKey(catId, idx){ return catId + "::" + idx; }
+
+  let activeCat = CATEGORIES[0].id;
+  let mode = "detail"; // or "revision"
+
+  const catListEl = document.getElementById("catList");
+  const contentEl = document.getElementById("content");
+  const pageTitle = document.getElementById("pageTitle");
+  const pageSub = document.getElementById("pageSub");
+  const progressFill = document.getElementById("progressFill");
+  const progressText = document.getElementById("progressText");
+
+  function totalTopics(){
+    return CATEGORIES.reduce((sum,c)=>sum+c.topics.length,0);
+  }
+  function doneCount(){
+    return Object.values(done).filter(Boolean).length;
+  }
+  function updateProgress(){
+    const total = totalTopics();
+    const d = doneCount();
+    const pct = total ? Math.round((d/total)*100) : 0;
+    progressFill.style.width = pct + "%";
+    progressText.textContent = d + " / " + total + " (" + pct + "%)";
+  }
+
+  function renderSidebar(){
+    catListEl.innerHTML = "";
+    CATEGORIES.forEach(cat=>{
+      const li = document.createElement("li");
+      li.className = "cat-item";
+      const btn = document.createElement("button");
+      btn.className = "cat-btn" + (cat.id === activeCat ? " active" : "");
+      const doneInCat = cat.topics.filter((_,i)=>done[topicKey(cat.id,i)]).length;
+      btn.innerHTML =
+        '<span style="display:flex;align-items:center;gap:8px;"><span class="swatch" style="background:'+cat.color+'"></span>'+cat.title+'</span>'+
+        '<span class="count">'+doneInCat+'/'+cat.topics.length+'</span>';
+      btn.onclick = ()=>{ activeCat = cat.id; render(); };
+      li.appendChild(btn);
+      catListEl.appendChild(li);
+    });
+  }
+
+  function renderDetail(){
+    const cat = CATEGORIES.find(c=>c.id===activeCat);
+    pageTitle.textContent = cat.title;
+    pageSub.textContent = cat.topics.length + " topic" + (cat.topics.length===1?"":"s") + " in this category";
+    contentEl.innerHTML = "";
+    cat.topics.forEach((topic, idx)=>{
+      const key = topicKey(cat.id, idx);
+      const isDone = !!done[key];
+      const card = document.createElement("div");
+      card.className = "topic-card" + (isDone ? " done" : "");
+
+      const head = document.createElement("div");
+      head.className = "topic-head";
+      const h3 = document.createElement("h3");
+      h3.className = "topic-title";
+      h3.textContent = topic.title;
+      const label = document.createElement("label");
+      label.className = "done-check";
+      label.innerHTML = '<input type="checkbox" '+(isDone?"checked":"")+'/> done';
+      label.querySelector("input").onchange = (e)=>{
+        done[key] = e.target.checked;
+        saveDone();
+        render();
+      };
+      head.appendChild(h3);
+      head.appendChild(label);
+      card.appendChild(head);
+
+      const ul = document.createElement("ul");
+      ul.className = "points";
+      topic.points.forEach(p=>{
+        const li = document.createElement("li");
+        li.textContent = p;
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
+
+      if (topic.qa && topic.qa.length){
+        const qaBlock = document.createElement("div");
+        qaBlock.className = "qa-block";
+        topic.qa.forEach(pair=>{
+          const item = document.createElement("div");
+          item.className = "qa-item";
+          const q = document.createElement("div");
+          q.className = "qa-q";
+          q.textContent = "Q: " + pair.q;
+          const a = document.createElement("div");
+          a.className = "qa-a";
+          a.textContent = "A: " + pair.a;
+          item.appendChild(q);
+          item.appendChild(a);
+          qaBlock.appendChild(item);
+        });
+        card.appendChild(qaBlock);
+      }
+
+      contentEl.appendChild(card);
+    });
+  }
+
+  function renderRevision(){
+    pageTitle.textContent = "Quick Revision — All Topics";
+    pageSub.textContent = "Every point, every category, one scroll. Good for the 10 minutes before an interview.";
+    contentEl.innerHTML = "";
+    CATEGORIES.forEach(cat=>{
+      const catHeader = document.createElement("div");
+      catHeader.className = "cat-header";
+      catHeader.innerHTML = '<h2 style="color:'+cat.color+'">'+cat.title+'</h2>';
+      contentEl.appendChild(catHeader);
+
+      cat.topics.forEach(topic=>{
+        const card = document.createElement("div");
+        card.className = "topic-card";
+        card.innerHTML = '<h3 class="topic-title">'+topic.title+'</h3>';
+        const ul = document.createElement("ul");
+        ul.className = "points";
+        topic.points.forEach(p=>{
+          const li = document.createElement("li");
+          li.textContent = p;
+          ul.appendChild(li);
+        });
+        card.appendChild(ul);
+        contentEl.appendChild(card);
+      });
+    });
+  }
+
+  function render(){
+    renderSidebar();
+    updateProgress();
+    if (mode === "detail") renderDetail();
+    else renderRevision();
+    window.scrollTo(0,0);
+  }
+
+  document.getElementById("modeDetail").onclick = ()=>{
+    mode = "detail";
+    document.getElementById("modeDetail").classList.add("active");
+    document.getElementById("modeRevision").classList.remove("active");
+    render();
+  };
+  document.getElementById("modeRevision").onclick = ()=>{
+    mode = "revision";
+    document.getElementById("modeRevision").classList.add("active");
+    document.getElementById("modeDetail").classList.remove("active");
+    render();
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
