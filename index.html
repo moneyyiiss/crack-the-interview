@@ -95,6 +95,54 @@
   .search-box input:focus{border-color:var(--accent);background:#fff;}
   .search-box input::placeholder{color:var(--text-faint);}
 
+  /* ---- account ---- */
+  .account-bar{padding:0 16px 10px 16px;}
+  .account-btn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    padding:8px 10px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease;
+  }
+  .account-btn:hover{background:var(--surface-hover);border-color:#c8c8ce;}
+  .account-info{
+    display:flex;align-items:center;gap:9px;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:9px;padding:8px 10px;
+  }
+  .account-avatar{
+    width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;text-transform:uppercase;
+  }
+  .account-email{flex:1;min-width:0;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .account-signout{background:none;border:none;color:var(--text-faint);font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;flex-shrink:0;}
+  .account-signout:hover{color:#dc2626;}
+  .account-sync-note{font-size:10.5px;color:var(--text-faint);margin-top:6px;text-align:center;}
+
+  /* ---- auth modal ---- */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(24,24,27,0.4);z-index:100;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+    width:100%;max-width:360px;padding:22px 22px 24px 22px;box-shadow:0 24px 60px -20px rgba(0,0,0,0.3);
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .modal-tabs{display:flex;gap:4px;background:var(--panel-2);border-radius:9px;padding:3px;}
+  .modal-tab{background:none;border:none;color:var(--text-dim);font-size:13px;font-weight:600;padding:6px 14px;border-radius:7px;cursor:pointer;}
+  .modal-tab.active{background:var(--panel);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+  .modal-close{background:none;border:none;color:var(--text-faint);font-size:20px;line-height:1;cursor:pointer;padding:4px;}
+  .modal-close:hover{color:var(--text);}
+  .modal-sub{font-size:12.5px;color:var(--text-faint);margin:10px 0 16px 0;}
+  .field-label{display:block;font-size:12px;font-weight:600;color:var(--text-dim);margin:0 0 6px 0;}
+  #authForm input{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    color:var(--text);padding:9px 12px;font-size:13.5px;outline:none;margin-bottom:14px;
+    transition:border-color .15s ease;
+  }
+  #authForm input:focus{border-color:var(--accent);}
+  .auth-msg{font-size:12.5px;margin:-6px 0 12px 0;min-height:0;}
+  .auth-msg.error{color:#dc2626;}
+  .auth-msg.success{color:var(--good);}
+  .auth-submit{width:100%;justify-content:center;padding:10px 14px;}
+
   .side-scroll{flex:1;overflow-y:auto;padding:6px 12px 12px 12px;}
   .nav-section-label{
     font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);
@@ -343,6 +391,8 @@
       </div>
     </div>
 
+    <div class="account-bar" id="accountBar"></div>
+
     <div class="side-scroll">
       <button class="nav-item" id="navOverview">
         <span class="nav-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>
@@ -385,6 +435,28 @@
   </main>
 </div>
 
+<div class="modal-overlay" id="authOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-tabs">
+        <button type="button" class="modal-tab active" id="tabLogin">Log in</button>
+        <button type="button" class="modal-tab" id="tabSignup">Sign up</button>
+      </div>
+      <button type="button" class="modal-close" id="authClose" aria-label="Close">&times;</button>
+    </div>
+    <p class="modal-sub" id="authSub">Log in to sync your progress across every device.</p>
+    <form id="authForm">
+      <label class="field-label" for="authEmail">Email</label>
+      <input type="email" id="authEmail" required autocomplete="email" placeholder="you@example.com" />
+      <label class="field-label" for="authPassword">Password</label>
+      <input type="password" id="authPassword" required autocomplete="current-password" minlength="6" placeholder="At least 6 characters" />
+      <div class="auth-msg" id="authMsg"></div>
+      <button type="submit" class="btn primary auth-submit" id="authSubmitBtn">Log in</button>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js"></script>
 <script>
 (function(){
@@ -396,6 +468,190 @@
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch(e){}
   }
   function topicKey(catId, idx){ return catId + "::" + idx; }
+
+  /* ---------------- auth + cloud progress sync (Supabase) ---------------- */
+  const SUPABASE_URL = "https://fulxakovoujbpgxytoxf.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bHhha292b3VqYnBneHl0b3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MDg5NDgsImV4cCI6MjEwNTM4NDk0OH0.R6nfvhHSXzOwtG7hvnp3G47Jv-zXeSEcX1UrU_miAAY";
+  const sb = (window.supabase && window.supabase.createClient)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  let currentUser = null;
+  let authMode = "login"; // 'login' | 'signup'
+  let syncing = false;
+
+  const accountBar = document.getElementById("accountBar");
+  const authOverlay = document.getElementById("authOverlay");
+  const authForm = document.getElementById("authForm");
+  const authEmail = document.getElementById("authEmail");
+  const authPassword = document.getElementById("authPassword");
+  const authMsg = document.getElementById("authMsg");
+  const authSubmitBtn = document.getElementById("authSubmitBtn");
+  const authSub = document.getElementById("authSub");
+  const tabLogin = document.getElementById("tabLogin");
+  const tabSignup = document.getElementById("tabSignup");
+  const authClose = document.getElementById("authClose");
+
+  function renderAccountBar(){
+    if (!accountBar) return;
+    if (currentUser){
+      const email = currentUser.email || "Account";
+      accountBar.innerHTML =
+        '<div class="account-info">'+
+          '<div class="account-avatar">'+esc(email.slice(0,1))+'</div>'+
+          '<div class="account-email">'+esc(email)+'</div>'+
+          '<button class="account-signout" id="signOutBtn">Sign out</button>'+
+        '</div>';
+      const so = document.getElementById("signOutBtn");
+      if (so) so.onclick = doSignOut;
+    } else {
+      accountBar.innerHTML =
+        '<button class="account-btn" id="openAuthBtn">'+
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'+
+          'Sign in to sync progress'+
+        '</button>';
+      const btn = document.getElementById("openAuthBtn");
+      if (btn) btn.onclick = ()=> openAuthModal("login");
+    }
+  }
+
+  function openAuthModal(mode){
+    authMode = mode || "login";
+    setAuthMode(authMode);
+    authMsg.textContent = ""; authMsg.className = "auth-msg";
+    authOverlay.classList.add("show");
+    setTimeout(()=> authEmail.focus(), 50);
+  }
+  function closeAuthModal(){
+    authOverlay.classList.remove("show");
+    authForm.reset();
+    authMsg.textContent = ""; authMsg.className = "auth-msg";
+  }
+  function setAuthMode(mode){
+    authMode = mode;
+    tabLogin.classList.toggle("active", mode === "login");
+    tabSignup.classList.toggle("active", mode === "signup");
+    authSub.textContent = mode === "login"
+      ? "Log in to sync your progress across every device."
+      : "Create an account to save your progress and pick up where you left off, anywhere.";
+    authSubmitBtn.textContent = mode === "login" ? "Log in" : "Sign up";
+  }
+
+  if (authClose) authClose.onclick = closeAuthModal;
+  if (authOverlay) authOverlay.addEventListener("click", (e)=>{ if (e.target === authOverlay) closeAuthModal(); });
+  if (tabLogin) tabLogin.onclick = ()=> setAuthMode("login");
+  if (tabSignup) tabSignup.onclick = ()=> setAuthMode("signup");
+
+  if (authForm) authForm.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    if (!sb){ authMsg.textContent = "Cloud sync isn't available right now — you can still use the app, progress just stays on this browser."; authMsg.className = "auth-msg error"; return; }
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+    authSubmitBtn.disabled = true;
+    authMsg.textContent = ""; authMsg.className = "auth-msg";
+    try {
+      if (authMode === "signup"){
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if (error) throw error;
+        if (data.session){
+          authMsg.textContent = "Account created — you're signed in.";
+          authMsg.className = "auth-msg success";
+          setTimeout(closeAuthModal, 700);
+        } else {
+          authMsg.textContent = "Check your email to confirm your account, then log in.";
+          authMsg.className = "auth-msg success";
+        }
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        authMsg.textContent = "Signed in.";
+        authMsg.className = "auth-msg success";
+        setTimeout(closeAuthModal, 400);
+      }
+    } catch(err){
+      authMsg.textContent = (err && err.message) ? err.message : "Something went wrong. Please try again.";
+      authMsg.className = "auth-msg error";
+    } finally {
+      authSubmitBtn.disabled = false;
+    }
+  });
+
+  async function doSignOut(){
+    if (sb) { try { await sb.auth.signOut(); } catch(e){} }
+    currentUser = null;
+    renderAccountBar();
+  }
+
+  // Push one topic's completion state to the cloud (fire-and-forget, local state is source of truth for the UI)
+  async function pushProgress(key, isDone){
+    if (!sb || !currentUser) return;
+    try {
+      if (isDone){
+        await sb.from("topic_progress").upsert({ user_id: currentUser.id, topic_slug: key, completed: true, updated_at: new Date().toISOString() });
+      } else {
+        await sb.from("topic_progress").delete().eq("user_id", currentUser.id).eq("topic_slug", key);
+      }
+    } catch(e){ /* best-effort sync; local progress already saved */ }
+  }
+
+  async function pushAllProgress(keys, isDone){
+    if (!sb || !currentUser || !keys.length) return;
+    try {
+      if (isDone){
+        const rows = keys.map(k => ({ user_id: currentUser.id, topic_slug: k, completed: true, updated_at: new Date().toISOString() }));
+        await sb.from("topic_progress").upsert(rows);
+      } else {
+        await sb.from("topic_progress").delete().eq("user_id", currentUser.id).in("topic_slug", keys);
+      }
+    } catch(e){ /* best-effort */ }
+  }
+
+  async function clearRemoteProgress(){
+    if (!sb || !currentUser) return;
+    try { await sb.from("topic_progress").delete().eq("user_id", currentUser.id); } catch(e){}
+  }
+
+  // On login: merge local (guest) progress with whatever's already saved in the cloud for this account.
+  async function syncFromRemote(){
+    if (!sb || !currentUser || syncing) return;
+    syncing = true;
+    try {
+      const { data, error } = await sb.from("topic_progress").select("topic_slug,completed").eq("user_id", currentUser.id);
+      if (error) throw error;
+      const remoteKeys = new Set((data || []).filter(r => r.completed).map(r => r.topic_slug));
+      const localKeys = Object.keys(done).filter(k => done[k]);
+
+      // Merge: anything true locally OR remotely ends up true.
+      const merged = {};
+      remoteKeys.forEach(k => merged[k] = true);
+      localKeys.forEach(k => merged[k] = true);
+      done = merged;
+      saveDone();
+
+      // Push any locally-completed topics that weren't yet in the cloud.
+      const toPush = localKeys.filter(k => !remoteKeys.has(k));
+      if (toPush.length) await pushAllProgress(toPush, true);
+
+      render();
+    } catch(e){ /* if sync fails, keep whatever's local */ }
+    finally { syncing = false; }
+  }
+
+  if (sb){
+    sb.auth.getSession().then(({ data })=>{
+      currentUser = data && data.session ? data.session.user : null;
+      renderAccountBar();
+      if (currentUser) syncFromRemote();
+    });
+    sb.auth.onAuthStateChange((_event, session)=>{
+      const wasLoggedIn = !!currentUser;
+      currentUser = session ? session.user : null;
+      renderAccountBar();
+      if (currentUser && !wasLoggedIn) syncFromRemote();
+    });
+  } else {
+    renderAccountBar();
+  }
 
   let view = "overview";   // 'overview' | 'category' | 'revision'
   let activeCat = null;
@@ -524,8 +780,10 @@
     markBtn.className = "btn" + (allDone ? "" : " primary");
     markBtn.textContent = allDone ? "Mark all undone" : "Mark all done";
     markBtn.onclick = ()=>{
-      cat.topics.forEach((_,i)=>{ done[topicKey(cat.id,i)] = !allDone; });
+      const keys = cat.topics.map((_,i)=>topicKey(cat.id,i));
+      keys.forEach(k=>{ done[k] = !allDone; });
       saveDone(); render();
+      pushAllProgress(keys, !allDone);
     };
     topbarActions.appendChild(markBtn);
     topbarActions.appendChild(menuToggleClone());
@@ -557,7 +815,12 @@
     if (home) home.onclick = (e)=>{ e.preventDefault(); view="overview"; render(); };
 
     contentEl.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb=>{
-      cb.onchange = (e)=>{ done[e.target.getAttribute("data-key")] = e.target.checked; saveDone(); render(); };
+      cb.onchange = (e)=>{
+        const key = e.target.getAttribute("data-key");
+        const checked = e.target.checked;
+        done[key] = checked; saveDone(); render();
+        pushProgress(key, checked);
+      };
     });
   }
 
@@ -631,6 +894,7 @@
   document.getElementById("resetBtn").onclick = ()=>{
     if (confirm("Reset all progress? This clears every checked topic in this browser.")){
       done = {}; saveDone(); render();
+      clearRemoteProgress();
     }
   };
   searchInput.addEventListener("input", (e)=>{ query = e.target.value; render(); });
