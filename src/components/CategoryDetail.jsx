@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { highlightCode, initials } from '../lib/highlight.js';
 import { topicKey } from '../lib/useProgress.js';
+import Diagram from './Diagram.jsx';
 
 function CodeBlock({ code, filename }) {
   return (
@@ -93,7 +94,7 @@ export default function CategoryDetail({ categories, done, progress }) {
                     ))}
                   </ul>
                   {topic.code ? <CodeBlock code={topic.code} filename={cat.id + '_' + (idx + 1) + '.java'} /> : null}
-                  {topic.diagram ? <div dangerouslySetInnerHTML={{ __html: topic.diagram }} /> : null}
+                  {topic.flow ? <Diagram flow={topic.flow} /> : topic.diagram ? <div dangerouslySetInnerHTML={{ __html: topic.diagram }} /> : null}
                 </div>
               </div>
             </div>
