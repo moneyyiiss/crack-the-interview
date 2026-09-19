@@ -4,10 +4,11 @@ import React, { useEffect, useRef, useState } from 'react';
 // `flow` spec (see data shapes below) instead of hand-written HTML, so adding
 // a diagram to a topic is just a few lines of data — and every diagram gets
 // the same staggered entrance animation. Pipeline/lifecycle diagrams go
-// further: they're interactive, step-through visualizations (play / step /
-// reset) inspired by VisualGo, so a learner can actually watch the sequence
-// execute one stage at a time instead of seeing a static, already-finished
-// picture.
+// further: they're continuous, self-playing, step-through visualizations
+// (auto-play + optional manual play/step/reset) inspired by animated
+// process-flow diagrams (JointJS-style), so a learner can watch the sequence
+// keep moving through every stage on a loop instead of seeing a static,
+// already-finished picture.
 //
 // Shapes:
 //  { type:'pipeline', steps:['A','B','C'] }
@@ -34,10 +35,14 @@ export default function Diagram({ flow }) {
   }
 }
 
-// ---- Pipeline / Lifecycle: interactive step-through visualization ----
+// ---- Pipeline / Lifecycle: continuous, self-playing flow visualization ----
+// Like the JointJS "animated process flow" style: the sequence keeps moving
+// through every step on a loop, on its own, the moment the diagram is on
+// screen — no click needed. Play/Pause/Step/Reset are still there for anyone
+// who wants to freeze a frame and inspect it.
 function Pipeline({ steps, loop, loopBackTo }) {
-  const [active, setActive] = useState(0); // -1 = not started
-  const [playing, setPlaying] = useState(false);
+  const [active, setActive] = useState(0);
+  const [playing, setPlaying] = useState(true); // auto-plays on mount
   const timerRef = useRef(null);
   const n = steps.length;
   const loopIdx = loop ? Math.max(0, steps.findIndex((s) => s === loopBackTo)) : -1;
@@ -47,14 +52,13 @@ function Pipeline({ steps, loop, loopBackTo }) {
     timerRef.current = setInterval(() => {
       setActive((cur) => {
         const next = cur + 1;
-        if (next >= n) {
-          if (loop) return loopIdx === -1 ? 0 : loopIdx;
-          setPlaying(false);
-          return cur;
-        }
+        // Every pipeline loops continuously — a plain pipeline restarts from
+        // the top, a lifecycle rewinds to its declared loop-back point —
+        // instead of stopping dead at the last step.
+        if (next >= n) return loop ? (loopIdx === -1 ? 0 : loopIdx) : 0;
         return next;
       });
-    }, 1100);
+    }, 950);
     return () => clearInterval(timerRef.current);
   }, [playing, n, loop, loopIdx]);
 
