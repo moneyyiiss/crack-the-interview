@@ -44,6 +44,19 @@ const CATEGORIES = [
           { q: "Why must main be static?", a: "So the JVM can call it without first creating an object of the class." },
         ],
       },
+      {
+        title: "Java Editions, Versions & Release Cadence",
+        points: [
+          "Three editions: Java SE (Standard Edition, the core language), Java EE / Jakarta EE (enterprise: servlets, JPA — now under the Eclipse Foundation), Java ME (Micro Edition, embedded/mobile — largely legacy today).",
+          "Since Java 9, a strict 6-month release cadence: a new feature version ships every March and September, whether or not big features are ready.",
+          "LTS (Long-Term Support) releases — Java 8, 11, 17, 21 — get years of vendor support; non-LTS versions are best for trying new features early, not for long-lived production systems.",
+          "Java is open-sourced primarily under OpenJDK; Oracle JDK and OpenJDK builds have been functionally near-identical since Java 11.",
+          "'Java version' vs 'source/target language level' — you can compile against an older language level while still running on a newer JVM, for compatibility.",
+        ],
+        qa: [
+          { q: "Why do most companies standardize on an LTS version like Java 17 rather than the latest release?", a: "LTS versions get multiple years of security patches and vendor support, while non-LTS versions stop receiving updates as soon as the next release ships six months later — production systems need that longer support window." },
+        ],
+      },
     ],
   },
   {
@@ -114,6 +127,32 @@ const CATEGORIES = [
         ],
         qa: [
           { q: "Why does Integer.valueOf(100) == Integer.valueOf(100) return true but valueOf(200) doesn't?", a: "The Integer cache (-128 to 127) reuses cached objects; outside that range, each valueOf() call creates a fresh object." },
+        ],
+      },
+      {
+        title: "Type Casting & Conversion",
+        points: [
+          "Widening (implicit) conversion — smaller type to larger, safe, done automatically: int to long, float to double.",
+          "Narrowing (explicit) conversion — larger type to smaller, needs an explicit cast, can lose data/precision: (int) 3.99 gives 3, (byte) 130 overflows and wraps.",
+          "Casting between object references only works along the same inheritance line, checked at compile time for unrelated types — use instanceof before a downcast to avoid ClassCastException.",
+          "Autoboxing/unboxing is a separate concept from casting — it converts between a primitive and its wrapper class, not between unrelated types.",
+          "String to number: Integer.parseInt() / Double.parseDouble(); number to String: String.valueOf() or simple concatenation with \"\".",
+        ],
+        qa: [
+          { q: "What happens when you narrow-cast a double that's too large for an int?", a: "It doesn't throw — an out-of-range double clamps to Integer.MIN_VALUE/MAX_VALUE, while a normal in-range double just has its fractional part truncated." },
+        ],
+      },
+      {
+        title: "Keywords, Identifiers & Naming Conventions",
+        points: [
+          "Java has 50+ reserved keywords (class, if, static, ...) that can't be used as identifiers; true, false, null are literals, not keywords, but are still reserved.",
+          "Identifiers can contain letters, digits, _ and $, but can't start with a digit; case-sensitive (Age and age are different variables).",
+          "Conventions (enforced by tooling, not the compiler): classes/interfaces in PascalCase, methods/variables in camelCase, constants in UPPER_SNAKE_CASE, packages all lowercase.",
+          "var, yield, record, sealed, permits are 'contextual keywords' — reserved only in specific positions, so they don't break old code that already used them as identifiers.",
+          "Package names conventionally use reverse domain notation (com.company.project) to avoid naming collisions across libraries.",
+        ],
+        qa: [
+          { q: "Why is 'var' called a contextual keyword instead of a full keyword?", a: "It's only treated specially in that specific local-variable-declaration position; existing code that had a variable, method, or class literally named 'var' before Java 10 still compiles fine, since 'var' isn't reserved everywhere." },
         ],
       },
     ],
@@ -238,6 +277,45 @@ const CATEGORIES = [
         ],
         qa: [],
       },
+      {
+        title: "Polymorphism In Depth (Compile-time vs Runtime)",
+        points: [
+          "Compile-time (static) polymorphism = method overloading — the compiler picks which method to call based on the argument types it sees at compile time.",
+          "Runtime (dynamic) polymorphism = method overriding — the JVM decides which overridden version to run based on the object's actual type at runtime, via dynamic method dispatch.",
+          "A reference variable's declared type controls which methods/fields are visible at compile time; the object's actual type controls which overridden method body runs.",
+          "Field access and static methods are NOT polymorphic — they're resolved using the reference's declared type, not the object's actual type (a common trick question).",
+          "Polymorphism lets you write code against an abstraction (List<String> list = new ArrayList<>();) so the concrete implementation can change without touching the calling code.",
+        ],
+        qa: [
+          { q: "If a subclass hides (not overrides) a field with the same name, which value do you get through a parent-typed reference?", a: "The parent's field — fields aren't polymorphic. Only overridden instance methods use the object's actual runtime type; fields and static methods are resolved by the reference's declared (compile-time) type." },
+        ],
+      },
+      {
+        title: "Object Cloning (Shallow vs Deep Copy)",
+        points: [
+          "Implement Cloneable (a marker interface, like Serializable) and override clone() (inherited from Object, protected by default) to support copying an object.",
+          "Object.clone() does a shallow copy by default — primitive fields are copied by value, but reference fields (arrays, objects) still point to the same underlying objects as the original.",
+          "Deep copy means recursively cloning every referenced object too, so the copy is fully independent — usually done manually inside your overridden clone(), or via serialization as a blunt workaround.",
+          "Calling clone() without implementing Cloneable throws CloneNotSupportedException.",
+          "Many teams avoid clone() entirely (Joshua Bloch calls it 'broken') and use a copy constructor or a static factory method instead for clearer, safer copying.",
+        ],
+        qa: [
+          { q: "If you shallow-copy an object that holds a List field, and then modify that list through the copy, what happens to the original?", a: "The original is affected too — a shallow copy only duplicates the reference to the list, not the list itself, so both objects still point to the exact same List instance in memory." },
+        ],
+      },
+      {
+        title: "Inner Classes & Anonymous Classes",
+        points: [
+          "Non-static (inner) class — tied to an instance of the outer class, can access the outer instance's private members directly, created via outer.new Inner().",
+          "Static nested class — doesn't need an outer instance; behaves like a regular top-level class just namespaced inside another. Most nested classes should default to static unless they truly need the outer instance.",
+          "Local class — defined inside a method body, visible only within that method, can capture effectively-final local variables.",
+          "Anonymous class — a one-off, unnamed class defined and instantiated in a single expression, commonly used (pre-lambda) to implement a listener or Runnable inline: new Runnable() { public void run() { ... } }.",
+          "Since Java 8, lambdas replace most anonymous-class use cases for functional interfaces — more concise and don't create a new .class file per usage.",
+        ],
+        qa: [
+          { q: "Why does an inner (non-static) class need an outer instance to be created, but a static nested class doesn't?", a: "A non-static inner class implicitly holds a reference to its enclosing instance (so it can reach the outer object's fields), so it can only exist tied to one; a static nested class holds no such reference, so it's independent, just like a normal top-level class." },
+        ],
+      },
     ],
   },
   {
@@ -269,6 +347,32 @@ const CATEGORIES = [
         ],
         qa: [
           { q: "Why is 'name = name + i' inside a loop considered bad practice?", a: "Each iteration creates a brand-new String object and discards the old one, so total work grows quadratically with iterations — use StringBuilder instead." },
+        ],
+      },
+      {
+        title: "Common String Methods Cheat Sheet",
+        points: [
+          "length(), charAt(i), substring(start, end), indexOf(), contains(), replace(), split(regex), trim()/strip() (strip() is Unicode-aware, added in Java 11).",
+          "equals() vs equalsIgnoreCase() — content comparison, case-sensitive vs not; compareTo() gives lexicographic ordering (negative/zero/positive).",
+          "String.format(\"%s is %d\", name, age) / formatted() (Java 15+) for template-style formatting, similar to printf.",
+          "String.join(\", \", list) concatenates with a delimiter; String.valueOf(obj) safely converts almost anything to a String.",
+          "isEmpty() checks length == 0; isBlank() (Java 11+) also treats whitespace-only strings as blank.",
+        ],
+        qa: [
+          { q: "What's the difference between trim() and strip()?", a: "trim() only removes characters <= U+0020 (basically ASCII whitespace); strip() (Java 11+) is Unicode-aware and correctly removes any character Java considers whitespace, including some non-ASCII space characters trim() misses." },
+        ],
+      },
+      {
+        title: "String Formatting & Basic Regex",
+        points: [
+          "String.matches(regex) checks if the whole string matches a pattern; Pattern.compile(regex).matcher(str) is the reusable, more efficient way when checking the same pattern repeatedly.",
+          "split(regex) treats its argument as a regex, not a literal string — split(\".\") on \"a.b.c\" needs escaping (split(\"\\\\.\")) since . is a regex metacharacter.",
+          "Common regex building blocks: \\d (digit), \\w (word char), \\s (whitespace), + (one or more), * (zero or more), ? (optional), ^ / $ (start/end anchors).",
+          "Text blocks (Java 15+), triple-quoted strings, are handy for multi-line regex, SQL, or JSON without escaping every quote and newline.",
+          "Matcher.group() extracts the matched text; group(1), group(2) extract captured sub-groups from parentheses in the pattern.",
+        ],
+        qa: [
+          { q: "Why does \"a.b.c\".split(\".\") return an empty array instead of splitting on the literal dots?", a: "split() treats its argument as a regex, and '.' as a regex means 'any character' — so it matches every character, leaving nothing; you need split(\"\\\\.\") to match a literal dot." },
         ],
       },
     ],
@@ -313,6 +417,32 @@ const CATEGORIES = [
           "Avoid using exceptions for normal control flow — they're relatively expensive and meant for exceptional situations.",
         ],
         qa: [],
+      },
+      {
+        title: "Exception Chaining & Custom Hierarchies",
+        points: [
+          "Exception chaining preserves the original cause when you wrap one exception in another: throw new ServiceException(\"failed\", originalException); — the original is retrievable later via getCause().",
+          "Design custom exception hierarchies to mirror your domain: a base ApplicationException, with subclasses like ValidationException, NotFoundException, each carrying relevant context fields.",
+          "Prefer unchecked (extends RuntimeException) custom exceptions for most modern APIs — checked exceptions tend to leak implementation details up through every calling layer's throws clause.",
+          "printStackTrace() prints the full chain ('Caused by: ...') so you can trace back to the original failure, not just the outer wrapper.",
+          "Never catch an exception just to log it and do nothing else ('swallowing') — at minimum rethrow it or wrap it with added context.",
+        ],
+        qa: [
+          { q: "Why wrap an exception instead of just letting the original propagate as-is?", a: "Wrapping lets you translate a low-level exception (e.g. SQLException) into a meaningful domain-specific one (e.g. UserNotFoundException) for callers, while getCause() still preserves the original for debugging — a cleaner API without losing diagnostic detail." },
+        ],
+      },
+      {
+        title: "finally vs finalize() vs try-finally Gotchas",
+        points: [
+          "finally is a block tied to try/catch that always executes (barring JVM crash/exit) — used for guaranteed cleanup (closing resources, releasing locks).",
+          "finalize() (deprecated since Java 9, removed for use in Java 18+) was a method the GC could call before reclaiming an object — unreliable timing, replaced by try-with-resources or the Cleaner API.",
+          "A return inside try along with a return inside finally is a classic gotcha — the finally's return silently overrides the try's return value.",
+          "Modifying a variable inside finally after a return was already prepared in try doesn't change an already-captured primitive return value, but can still affect a mutable object's fields since it's the same reference.",
+          "try-with-resources is the modern replacement for try/finally-close() — shorter, and correctly suppresses secondary exceptions instead of masking the original.",
+        ],
+        qa: [
+          { q: "If try returns 1 and finally returns 2, what does the method return?", a: "2 — a return statement inside finally always overrides any return (or even an uncaught exception) from the try/catch block, which is exactly why it's considered a bug-prone pattern to avoid." },
+        ],
       },
     ],
   },
@@ -389,6 +519,45 @@ const CATEGORIES = [
         ],
         qa: [],
       },
+      {
+        title: "Queue & Deque in Depth",
+        points: [
+          "Queue — FIFO by default; core methods come in two flavors: throwing (add, remove, element) and non-throwing/null-returning on failure (offer, poll, peek).",
+          "Deque (double-ended queue) supports insertion/removal at both ends — addFirst/addLast, removeFirst/removeLast — and can act as both a stack and a queue.",
+          "ArrayDeque is generally preferred over the legacy Stack class for stack behavior (push/pop) — faster, not synchronized, no legacy baggage.",
+          "PriorityQueue orders elements by natural ordering or a supplied Comparator, not insertion order — peek()/poll() always return the smallest (or highest-priority) element.",
+          "LinkedList implements both List and Deque, but ArrayDeque is usually faster for pure queue/stack use since it avoids per-node object overhead.",
+        ],
+        qa: [
+          { q: "Why is ArrayDeque usually recommended over the legacy Stack class?", a: "Stack extends the old, synchronized Vector, so every push/pop pays for locking you almost never need; ArrayDeque is unsynchronized, backed by a resizable array, and is faster for single-threaded stack or queue use — the Java docs themselves recommend it over Stack." },
+        ],
+      },
+      {
+        title: "Thread-Safe Collections (Synchronized vs Concurrent)",
+        points: [
+          "Collections.synchronizedList/Map/Set wraps a normal collection with synchronized methods — each call is thread-safe individually, but compound actions (check-then-act, iteration) still need external synchronization.",
+          "ConcurrentHashMap uses fine-grained internal locking (bucket-level, not whole-map) for much better concurrent throughput than a fully synchronized Map.",
+          "CopyOnWriteArrayList/Set copies the entire underlying array on every write — reads are lock-free and very fast, writes are expensive; ideal for read-heavy, write-rare scenarios like listener lists.",
+          "BlockingQueue implementations (ArrayBlockingQueue, LinkedBlockingQueue) block the calling thread when full (on put) or empty (on take) — the standard building block for producer-consumer pipelines.",
+          "Iterating a Collections.synchronizedXxx collection still requires manually synchronizing on it during iteration, or a ConcurrentModificationException can occur if another thread mutates it mid-loop.",
+        ],
+        qa: [
+          { q: "Why isn't Collections.synchronizedMap enough to prevent a race condition on 'if (!map.containsKey(k)) map.put(k, v)'?", a: "Each individual call (containsKey, put) is atomic on its own, but the check-then-act sequence as a whole isn't — another thread can insert the key between your containsKey and put calls; you'd need to synchronize the whole block, or use ConcurrentHashMap's atomic putIfAbsent()." },
+        ],
+      },
+      {
+        title: "Immutable & Unmodifiable Collections",
+        points: [
+          "List.of(...), Set.of(...), Map.of(...) (Java 9+) create truly immutable collections — any mutation attempt (add, remove, set) throws UnsupportedOperationException.",
+          "Collections.unmodifiableList(list) is different — it wraps the original, blocking direct mutation through the wrapper, but the underlying list can still be changed by anyone holding the original reference.",
+          "Immutable collections from List.of() reject null elements outright (throw NullPointerException on creation) — unlike a regular ArrayList, which allows nulls.",
+          "Immutability makes a collection inherently thread-safe to read from multiple threads with no synchronization needed.",
+          "Use immutable collections for constants, defensive copies returned from getters, and any data that shouldn't change after construction.",
+        ],
+        qa: [
+          { q: "What's the practical difference between List.of(1,2,3) and Collections.unmodifiableList wrapping a mutable copy?", a: "List.of() is genuinely immutable end-to-end and rejects nulls; unmodifiableList() only prevents mutation through that specific wrapper reference — if you kept a reference to the original mutable list, changes there would still show up through the 'unmodifiable' view." },
+        ],
+      },
     ],
   },
   {
@@ -454,6 +623,45 @@ const CATEGORIES = [
           "Thread pool sizing: CPU-bound tasks ≈ number of cores; I/O-bound tasks can use many more threads since they spend time waiting.",
         ],
         qa: [],
+      },
+      {
+        title: "Callable, Future & CompletableFuture",
+        points: [
+          "Runnable's run() returns nothing and can't throw checked exceptions; Callable<V>'s call() returns a value and can throw checked exceptions — submit a Callable to an ExecutorService to get a Future<V> back.",
+          "Future.get() blocks until the result is ready (or a timeout elapses); isDone()/cancel() let you poll or abort without blocking.",
+          "CompletableFuture (Java 8+) supports non-blocking composition: thenApply() (transform the result), thenCompose() (chain another async step), thenCombine() (combine two independent futures).",
+          "CompletableFuture.supplyAsync(() -> ...) runs work on the common ForkJoinPool by default, or on a supplied Executor if you pass one explicitly.",
+          "exceptionally() / handle() let you recover from or inspect a failure in a CompletableFuture chain without unwrapping try/catch at every step.",
+        ],
+        qa: [
+          { q: "Why prefer CompletableFuture over a plain Future for chaining async work?", a: "A plain Future only supports blocking get() — there's no way to say 'when this finishes, do X' without blocking a thread to wait; CompletableFuture lets you compose async steps (thenApply, thenCompose) that run automatically on completion, without ever blocking to check." },
+        ],
+      },
+      {
+        title: "Deadlock, Livelock & Starvation",
+        points: [
+          "Deadlock — two or more threads each hold a lock the other needs and wait forever; the classic fix is to always acquire multiple locks in the same global order across the whole codebase.",
+          "Livelock — threads keep changing state in response to each other but never make actual progress; unlike deadlock, threads aren't blocked, just unproductively busy.",
+          "Starvation — a thread never gets CPU time or a lock because other threads (often higher priority, or greedier with a lock) keep getting scheduled/served first.",
+          "Detecting deadlock: a thread dump (jstack) shows 'Found one Java-level deadlock' with the exact threads and locks involved.",
+          "tryLock(timeout) (from ReentrantLock) is a practical way to avoid deadlock — give up and back off instead of waiting forever for a contended lock.",
+        ],
+        qa: [
+          { q: "How would you actually debug a suspected deadlock in a running Java process?", a: "Take a thread dump (jstack <pid>, or jcmd <pid> Thread.print) — the JVM detects cyclic lock-wait dependencies and explicitly reports 'Found one Java-level deadlock', listing exactly which threads are blocked on which locks, so you don't have to reason it out from logs alone." },
+        ],
+      },
+      {
+        title: "Thread Pool Sizing & Executors Deep Dive",
+        points: [
+          "Executors.newFixedThreadPool(n) — fixed number of threads, unbounded queue; can build up unbounded memory if tasks arrive faster than they complete.",
+          "Executors.newCachedThreadPool() — creates threads as needed, reuses idle ones, kills them after 60s idle — good for many short bursty tasks, risky for sustained high load (unbounded thread creation).",
+          "Executors.newScheduledThreadPool(n) — supports delayed and periodic task execution (schedule(), scheduleAtFixedRate()).",
+          "In production code, many teams construct a ThreadPoolExecutor directly rather than the Executors factories, to explicitly control the queue type/size and rejection policy instead of relying on factory defaults.",
+          "Rejection policies (when the pool + queue are both full): AbortPolicy (throws), CallerRunsPolicy (runs the task on the calling thread — natural backpressure), DiscardPolicy, DiscardOldestPolicy.",
+        ],
+        qa: [
+          { q: "Why do many teams avoid Executors.newFixedThreadPool/newCachedThreadPool in production and build ThreadPoolExecutor directly instead?", a: "Both factory methods hide dangerous defaults — newFixedThreadPool uses an unbounded queue (can exhaust memory under sustained load) and newCachedThreadPool can spawn unlimited threads; building ThreadPoolExecutor directly forces you to explicitly choose a bounded queue size and a rejection policy." },
+        ],
       },
     ],
   },
@@ -524,6 +732,19 @@ const CATEGORIES = [
           { q: "Why can't a static method use its class's type parameter T directly?", a: "Static members belong to the class itself, not to any specific parameterized instance (Box<String> vs Box<Integer>) — since T only gets a concrete value when an instance is created, a static context has no T to refer to." },
         ],
       },
+      {
+        title: "PECS in Practice with Real Examples",
+        points: [
+          "PECS = Producer Extends, Consumer Super — a mnemonic for choosing between ? extends T and ? super T in method parameters.",
+          "Copy method example: void copy(List<? super T> dest, List<? extends T> src) — src only produces values (extends), dest only consumes them (super); this is exactly how Collections.copy() is declared.",
+          "If a structure is only read from, use ? extends T (a Producer) to accept the widest range of compatible subtypes.",
+          "If a structure is only written to, use ? super T (a Consumer) to accept the widest range of compatible supertypes.",
+          "If a structure is both read from and written to, don't use a wildcard at all — use the exact type T, since a wildcard would incorrectly restrict one side or the other.",
+        ],
+        qa: [
+          { q: "Why does Collections.copy(List<? super T> dest, List<? extends T> src) use two different wildcards instead of one shared type?", a: "dest only receives elements out of src (a consumer of T, so ? super T is safe to write into) while src only supplies elements into dest (a producer of T, so ? extends T is safe to read from) — using plain List<T> for both would needlessly force the caller's two lists to share the exact same generic type." },
+        ],
+      },
     ],
   },
   {
@@ -591,6 +812,19 @@ const CATEGORIES = [
         ],
         qa: [],
       },
+      {
+        title: "Console & Standard I/O: Scanner vs BufferedReader",
+        points: [
+          "Scanner(System.in) is the easiest way to read user input with built-in parsing (nextInt(), nextLine(), nextDouble()) — convenient but noticeably slower for large input due to regex-based tokenizing.",
+          "BufferedReader(new InputStreamReader(System.in)) reads faster but only gives raw lines/characters — numbers need manual parsing with Integer.parseInt(), etc.",
+          "Mixing nextInt() and nextLine() on the same Scanner is a classic bug — nextInt() doesn't consume the trailing newline, so a following nextLine() reads an empty string; call an extra nextLine() to consume it.",
+          "System.out.println() is effectively flushed per call, fine for small programs but relatively slow for heavy output — wrap with a BufferedWriter or build a StringBuilder and print once for performance-sensitive code.",
+          "For competitive programming or performance-critical I/O, BufferedReader + StreamTokenizer or a custom fast-reader class is the common choice over Scanner.",
+        ],
+        qa: [
+          { q: "Why does calling scanner.nextInt() followed by scanner.nextLine() often return an unexpectedly empty string?", a: "nextInt() only consumes the numeric token itself, leaving the trailing newline character in the input buffer; the very next nextLine() call then immediately reads that leftover newline as an empty line instead of the next real line of input." },
+        ],
+      },
     ],
   },
   {
@@ -646,6 +880,19 @@ const CATEGORIES = [
         ],
         qa: [
           { q: "Can a Java program have a memory leak even with automatic garbage collection?", a: "Yes — GC only reclaims objects that are unreachable. If a live reference (e.g. in a static list, cache, or forgotten listener) keeps pointing to an object you're done with, it stays reachable and is never collected, even though it's effectively dead weight." },
+        ],
+      },
+      {
+        title: "ClassLoaders & the Class Loading Process",
+        points: [
+          "Three built-in loaders in a hierarchy: Bootstrap (loads core java.* classes, written in native code), Platform/Extension (loads JDK extension classes), Application/System (loads your application's classpath classes).",
+          "Delegation model — a class loader first asks its parent to try loading a class before attempting it itself, which is why you can't accidentally shadow java.lang.String with your own class of the same name.",
+          "Class loading phases: Loading (find and read the .class bytes) → Linking (Verify bytecode correctness, Prepare static fields with defaults, Resolve symbolic references) → Initialization (run static initializers and static field assignments).",
+          "A class is loaded lazily — the JVM only loads it the first time it's actually referenced/used, not all at once at startup.",
+          "Custom class loaders (extending ClassLoader) enable plugin systems, hot-reloading, and isolated classpaths — how application servers keep separate deployed apps from clashing classes.",
+        ],
+        qa: [
+          { q: "Why can't you write your own java.lang.String class and have the JVM load it instead of the real one?", a: "The delegation model means your Application class loader first asks its parent (eventually the Bootstrap loader) to try loading java.lang.String; the Bootstrap loader always finds and loads the genuine core class first, so your custom version is never reached for a java.* package name." },
         ],
       },
     ],
@@ -715,6 +962,32 @@ const CATEGORIES = [
         ],
         qa: [],
       },
+      {
+        title: "Date & Time API (java.time)",
+        points: [
+          "Introduced in Java 8 to fix the old, mutable, not-thread-safe, confusingly-designed Date and Calendar classes.",
+          "LocalDate (date only), LocalTime (time only), LocalDateTime (both, no timezone), ZonedDateTime (with timezone) — all immutable, thread-safe value types.",
+          "Instant represents a single point on the UTC timeline (machine timestamp); Duration measures time between two Instants; Period measures a span in years/months/days between two LocalDates.",
+          "DateTimeFormatter replaces the old, notoriously not-thread-safe SimpleDateFormat, and is itself immutable and thread-safe.",
+          "Every 'modifying' operation (plusDays(), minusHours(), withYear()) returns a new object rather than mutating in place, consistent with the immutable design across the whole API.",
+        ],
+        qa: [
+          { q: "Why was java.time introduced when Date and Calendar already existed?", a: "Date and Calendar are mutable and not thread-safe (a shared instance can be silently corrupted across threads), have confusing zero-based months and other quirky APIs, and SimpleDateFormat parsing wasn't thread-safe either — java.time fixed all of this with immutable, clearly-named, thread-safe types." },
+        ],
+      },
+      {
+        title: "Method References in Depth",
+        points: [
+          "Four forms: Static — ClassName::staticMethod; Instance on a particular object — instance::method; Instance on an arbitrary object of a type (the first lambda parameter becomes the receiver) — ClassName::instanceMethod; Constructor — ClassName::new.",
+          "list.forEach(System.out::println) is an instance-method reference on a particular object (System.out).",
+          "str -> str.toUpperCase() is equivalent to the arbitrary-object form String::toUpperCase, since the first (and only) lambda parameter becomes the method's receiver.",
+          "Constructor references (ArrayList::new) are handy as a Supplier<List<T>> when a stream collector or factory needs to produce new instances.",
+          "A method reference must exactly match the target functional interface's method signature — Java infers this from context, it doesn't work as a bare expression on its own.",
+        ],
+        qa: [
+          { q: "Why does 'String::toUpperCase' work as a Function<String, String> even though toUpperCase() takes no explicit argument?", a: "In the 'arbitrary object of a particular type' form, the compiler treats the lambda's single input parameter as the implicit receiver the instance method is called on — so it desugars to str -> str.toUpperCase(), matching Function<String,String>'s one-argument shape exactly." },
+        ],
+      },
     ],
   },
   {
@@ -780,6 +1053,168 @@ const CATEGORIES = [
           "Young Gen (Eden + Survivor) for new objects, Old Gen for long-lived ones; GC only reclaims unreachable objects.",
         ],
         qa: [],
+      },
+      {
+        title: "Common Java Coding Problems (with Approach)",
+        points: [
+          "Reverse a String / check a palindrome — two-pointer approach from both ends, or StringBuilder.reverse() for a quick built-in check.",
+          "Find the first non-repeating character — count frequencies with a LinkedHashMap (to preserve order), then scan for the first entry with count 1.",
+          "Detect duplicates in an array — a HashSet lets you check-and-add in one O(n) pass; sorting first is an O(n log n) alternative that needs no extra space beyond the sort itself.",
+          "Group anagrams — sort each word's characters to build a canonical key, then Collectors.groupingBy(that key) groups them in a couple of lines.",
+          "FizzBuzz-style problems and simple recursion (factorial, Fibonacci, binary search) still show up as warm-ups — practice explaining base case vs recursive case out loud, not just writing the code silently.",
+        ],
+        qa: [
+          { q: "What's an efficient way to find duplicate elements in an array in Java, and why?", a: "Iterate once, checking add() on a HashSet for each element — add() returns false if the element was already present, giving an O(n) time, O(n) space duplicate check in a single pass, versus O(n log n) if you sort first (though sorting avoids the extra space)." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "patterns",
+    title: "Design Patterns",
+    color: "#0891B2",
+    topics: [
+      {
+        title: "Why Design Patterns Matter",
+        points: [
+          "Design patterns are named, reusable solutions to recurring design problems — a shared vocabulary that lets engineers communicate a whole design idea in one word ('just use a Factory here').",
+          "Grouped into three classic categories (Gang of Four): Creational (object creation), Structural (composing classes/objects), Behavioral (communication between objects).",
+          "Patterns aren't a checklist to force into every design — overusing them adds needless indirection; use one when it actually solves a problem you have, not preemptively.",
+          "Interviewers often care less about naming every pattern and more about recognizing when a piece of code is basically implementing one, and why.",
+          "Modern Java features (lambdas, streams, Optional) have quietly replaced the need for some classic patterns — Strategy is often just a lambda now.",
+        ],
+        qa: [],
+      },
+      {
+        title: "Singleton Pattern",
+        points: [
+          "Guarantees exactly one instance of a class exists, with a single global access point — commonly used for shared resources like a configuration manager or connection pool.",
+          "The enum singleton (enum Singleton { INSTANCE; }) is widely considered the safest modern implementation — inherently serialization-safe and immune to reflection-based instantiation attacks.",
+          "Classic lazy implementations need care under multithreading — double-checked locking with a volatile instance field is the traditional thread-safe lazy approach.",
+          "Singleton makes unit testing harder (global mutable state, hard to swap out/mock) — often criticized as an anti-pattern when overused for things that aren't truly singular.",
+          "The Bill Pugh / initialization-on-demand holder idiom (a private static inner class) gives lazy, thread-safe initialization without synchronization overhead.",
+        ],
+        qa: [
+          { q: "Why is the enum-based Singleton considered the safest implementation in Java?", a: "The JVM guarantees each enum constant is instantiated exactly once, and enums are automatically immune to being re-instantiated via reflection or broken via serialization/deserialization — problems that plague hand-rolled singleton classes unless you add extra defensive code." },
+        ],
+      },
+      {
+        title: "Factory & Builder Patterns",
+        points: [
+          "Factory Method — delegates object creation to a subclass or method, so calling code depends on an interface/abstract type rather than a concrete constructor.",
+          "Abstract Factory — a factory of factories; produces families of related objects (e.g. a UIFactory that creates matching Button, Checkbox, and Menu objects for one look-and-feel).",
+          "Builder — constructs a complex object step by step via chained method calls, avoiding a constructor with a huge number of parameters (the 'telescoping constructor' problem).",
+          "Records and Lombok's @Builder have reduced the need to hand-write Builder boilerplate, but the pattern is still common for objects with many optional fields.",
+          "Static factory methods (Integer.valueOf(), List.of()) are a lightweight alternative to a full Factory pattern — a static method can return a cached instance, a subtype, or hide the concrete class entirely.",
+        ],
+        qa: [
+          { q: "When would you reach for a Builder instead of just adding more constructors?", a: "When a class has many optional/combinable fields — a Builder lets callers set only what they need, in any order, with readable chained calls, avoiding both an unreadable multi-parameter constructor and an explosion of overloaded constructors for every combination." },
+        ],
+      },
+      {
+        title: "Observer & Strategy Patterns",
+        points: [
+          "Observer — a one-to-many dependency: when a subject's state changes, all registered observers are notified automatically; the basis for GUI event listeners and pub-sub systems.",
+          "Java's built-in java.util.Observer/Observable were deprecated in Java 9 — modern code uses PropertyChangeListener, custom listener interfaces, or reactive libraries instead.",
+          "Strategy — defines a family of interchangeable algorithms behind a common interface, letting the algorithm vary independently of the client that uses it.",
+          "Since Java 8, Strategy is very often just implemented with a lambda/functional interface instead of a full class hierarchy — passing a Comparator to sort() is Strategy in practice.",
+          "Both patterns favor composition and depending on interfaces over concrete classes — a recurring theme across most design patterns.",
+        ],
+        qa: [
+          { q: "How do lambdas make the classic Strategy pattern feel almost invisible in modern Java?", a: "Strategy is really just 'swap in a different algorithm behind a shared interface' — a functional interface (like Comparator or Function) plus a lambda gives you exactly that, without needing to write a separate named class for every strategy variant." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "principles",
+    title: "SOLID & Best Practices",
+    color: "#CA8A04",
+    topics: [
+      {
+        title: "SOLID Principles Overview",
+        points: [
+          "S — Single Responsibility: a class should have exactly one reason to change; mixing unrelated responsibilities makes every change riskier.",
+          "O — Open/Closed: classes should be open for extension but closed for modification — add new behavior via new subclasses/implementations rather than editing existing, tested code.",
+          "L — Liskov Substitution: a subclass must be usable anywhere its superclass is expected without breaking correctness — a subclass that throws UnsupportedOperationException on an inherited method usually violates this.",
+          "I — Interface Segregation: prefer several small, focused interfaces over one large 'fat' interface that forces implementers to define methods they don't need.",
+          "D — Dependency Inversion: depend on abstractions (interfaces), not concrete implementations — high-level code shouldn't need to know about a low-level class's details, enabling easy swapping/mocking.",
+        ],
+        qa: [
+          { q: "Give a concrete example of a Liskov Substitution violation.", a: "The classic one: Square extends Rectangle, but overrides setWidth/setHeight to keep both sides equal — this breaks any code that assumes 'setting a Rectangle's width doesn't change its height', so a Square can't safely substitute for a Rectangle everywhere the parent type is expected." },
+        ],
+      },
+      {
+        title: "Common Best Practices & Code Smells",
+        points: [
+          "Favor immutability by default — final fields, no setters unless truly needed — it eliminates whole categories of concurrency and defensive-copying bugs.",
+          "Avoid returning null for collections — return an empty collection instead, so callers don't need defensive null checks everywhere.",
+          "Keep methods small and named for what they do — a method needing a comment to explain 'what' (not 'why') is often a sign it should be split or renamed.",
+          "'Tell, don't ask' — prefer calling a method that does the work (order.ship()) over pulling out an object's data and deciding externally what to do with it.",
+          "Don't catch exceptions you can't meaningfully handle — let them propagate to a layer that can actually do something useful with the failure.",
+        ],
+        qa: [
+          { q: "Why is returning null from a method that produces a list generally considered worse than returning an empty list?", a: "Every caller now has to remember a null check before iterating or calling .size(), and forgetting even once causes a NullPointerException; an empty collection is iterated and measured safely with zero special-casing, and 'no results' is still expressed clearly." },
+        ],
+      },
+      {
+        title: "Effective Java Highlights (Joshua Bloch-style Tips)",
+        points: [
+          "Prefer static factory methods over constructors when you want a meaningful name, caching, or to return a subtype (List.of(), Optional.of()).",
+          "Minimize mutability — make fields final and classes immutable where practical; immutable objects are simpler to reason about and inherently thread-safe.",
+          "Favor composition over inheritance to avoid fragile base-class problems — a subclass can be silently broken by an unrelated change to its superclass's internals.",
+          "Always override toString() for value-like classes — dramatically improves debugging and log readability over the default ClassName@hashcode.",
+          "Use enums instead of int constants ('magic numbers') for a fixed set of related values — type-safe, self-documenting, and supports adding behavior per constant.",
+        ],
+        qa: [
+          { q: "Why is 'favor composition over inheritance' repeated so often as advice?", a: "Inheritance exposes a subclass to every implementation detail of its superclass, so a seemingly unrelated change in the parent can silently break subclasses that depended on old internal behavior — composition avoids this by only depending on the parent's public contract, not its internals." },
+        ],
+      },
+    ],
+  },
+  {
+    id: "enums-reflection",
+    title: "Enums, Annotations & Reflection",
+    color: "#DC2626",
+    topics: [
+      {
+        title: "Enums in Depth",
+        points: [
+          "An enum is a special class where every constant is a singleton instance of that class — enums implicitly extend java.lang.Enum and can't extend anything else.",
+          "Enums can have fields, constructors (implicitly private), and methods — each constant can even override a method with constant-specific behavior.",
+          "switch statements/expressions work naturally with enums, without needing a qualified prefix inside the switch body.",
+          "EnumMap and EnumSet are specialized, highly efficient collection implementations designed specifically for enum keys/elements (backed by arrays internally).",
+          "values() (auto-generated) returns all constants in declaration order; valueOf(String) looks up a constant by its exact name and throws IllegalArgumentException if not found.",
+        ],
+        qa: [
+          { q: "Why are EnumMap/EnumSet more efficient than a regular HashMap/HashSet of enum keys?", a: "Since an enum's full set of possible values is known and fixed at compile time, EnumMap/EnumSet can use a plain array indexed by each constant's ordinal internally, avoiding hashing entirely — faster and more memory-compact than a general-purpose hash-based structure." },
+        ],
+      },
+      {
+        title: "Annotations Explained",
+        points: [
+          "Annotations attach metadata to code (classes, methods, fields) without changing its behavior directly — the behavior comes from whatever tool/framework reads that metadata.",
+          "Built-in annotations: @Override (compile-time check), @Deprecated (marks as discouraged, triggers a compiler warning), @SuppressWarnings, @FunctionalInterface (enforces exactly one abstract method).",
+          "Meta-annotations describe other annotations: @Retention (SOURCE/CLASS/RUNTIME — how long the annotation info is kept), @Target (which elements it can annotate), @Inherited, @Documented.",
+          "Frameworks like Spring and JPA rely heavily on custom annotations (@Autowired, @Entity) combined with reflection to wire up behavior at runtime without you writing that plumbing by hand.",
+          "Only RUNTIME-retention annotations are visible via reflection at runtime — SOURCE and CLASS retention annotations are stripped before or during compilation.",
+        ],
+        qa: [
+          { q: "Why does an annotation need @Retention(RUNTIME) for a framework like Spring to act on it at runtime?", a: "By default, annotation info doesn't need to survive past compilation; RUNTIME retention explicitly tells the compiler to keep that metadata in the compiled .class file and make it available to the JVM, which is what lets a framework use reflection to read the annotation while the program is actually running." },
+        ],
+      },
+      {
+        title: "Reflection API Basics",
+        points: [
+          "java.lang.reflect lets code inspect and manipulate classes, methods, fields, and constructors at runtime, even ones it didn't know about at compile time.",
+          "obj.getClass() or MyClass.class gives you a Class<T> object — the entry point for reflective inspection (getMethods(), getFields(), getConstructors()).",
+          "Method.invoke(obj, args...) calls a method reflectively; Field.set(obj, value) sets a field's value, including private ones via setAccessible(true).",
+          "Reflection is how frameworks (Spring, Hibernate, JUnit, Jackson) do their 'magic' — instantiating classes, injecting dependencies, and calling annotated methods without you writing that glue code.",
+          "Trade-offs: reflection is noticeably slower than direct calls, bypasses some compile-time type safety, and can break encapsulation — use it sparingly in application code, mostly it's framework-internal machinery.",
+        ],
+        qa: [
+          { q: "Why do frameworks like Spring rely so heavily on reflection instead of you wiring everything by hand?", a: "Reflection lets the framework discover annotated classes/fields/methods (like @Autowired) at runtime and automatically instantiate objects and inject dependencies into them without you writing that boilerplate wiring code yourself — the framework inspects your classes generically instead of needing compile-time knowledge of them." },
+        ],
       },
     ],
   },
