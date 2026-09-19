@@ -3,149 +3,386 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0a0b0f" />
 <title>Java Interview Prep</title>
 <meta name="description" content="A complete, checklist-style Java interview prep companion — quick revision points, common interview questions, and progress tracking, all in one page." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%235b7cfa'/%3E%3Ctext x='50' y='69' font-size='56' font-family='Arial, sans-serif' font-weight='700' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E" />
 <style>
   :root{
-    --bg:#0f1116;
-    --panel:#161923;
-    --panel2:#1c202c;
-    --border:#2a2f3d;
-    --text:#e8eaf0;
-    --muted:#9aa1b5;
-    --accent:#4f7cff;
-    --accent-soft:rgba(79,124,255,0.15);
-    --good:#2ecc71;
-    --radius:12px;
+    --bg:#0a0b0f;
+    --panel:#12141b;
+    --panel-2:#171a23;
+    --surface-hover:#1c202b;
+    --border:#242938;
+    --border-soft:#1b1f2a;
+    --text:#edeff5;
+    --text-dim:#9aa1b5;
+    --text-faint:#666c80;
+    --accent:#5b7cfa;
+    --accent-2:#8b5cf6;
+    --accent-soft:rgba(91,124,250,0.14);
+    --good:#22c55e;
+    --good-soft:rgba(34,197,94,0.13);
+    --radius-lg:16px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow-md:0 12px 32px -16px rgba(0,0,0,0.55);
+    --sidebar-w:296px;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:var(--bg);
     color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.55;
+    font-family:var(--font);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
   }
   a{color:inherit;}
+  button{font-family:inherit;}
+  ::selection{background:var(--accent-soft);}
+
+  /* scrollbars */
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#262b38;border-radius:8px;border:2px solid var(--panel);}
+  ::-webkit-scrollbar-thumb:hover{background:#323847;}
+
   .app{display:flex;min-height:100vh;}
 
-  /* Sidebar */
+  /* ============ SIDEBAR ============ */
   .sidebar{
-    width:290px;
+    width:var(--sidebar-w);
     flex-shrink:0;
     background:var(--panel);
     border-right:1px solid var(--border);
-    padding:20px 14px;
+    display:flex;
+    flex-direction:column;
     position:sticky;
     top:0;
     height:100vh;
-    overflow-y:auto;
   }
-  .brand{
-    display:flex;align-items:center;gap:10px;
-    padding:4px 10px 18px 10px;
-    font-weight:700;font-size:18px;
+  .brand-row{
+    display:flex;align-items:center;gap:11px;
+    padding:20px 20px 16px 20px;
+    border-bottom:1px solid var(--border-soft);
   }
-  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);}
-  .progress-box{
-    background:var(--panel2);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:12px 14px;
-    margin:0 6px 18px 6px;
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:16px;color:#fff;
+    box-shadow:0 6px 16px -6px rgba(91,124,250,0.6);
   }
-  .progress-box .label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
-  .progress-bar{height:8px;border-radius:5px;background:var(--border);overflow:hidden;}
-  .progress-bar > div{height:100%;background:linear-gradient(90deg,var(--accent),#8a5cff);transition:width .3s ease;}
-  .cat-list{list-style:none;margin:0;padding:0;}
-  .cat-item{margin-bottom:2px;}
-  .cat-btn{
-    width:100%;text-align:left;background:none;border:none;color:var(--text);
-    padding:10px 12px;border-radius:9px;cursor:pointer;font-size:14px;
-    display:flex;align-items:center;justify-content:space-between;gap:8px;
-  }
-  .cat-btn:hover{background:var(--panel2);}
-  .cat-btn.active{background:var(--accent-soft);color:#cdd8ff;font-weight:600;}
-  .cat-btn .swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-  .cat-btn .count{font-size:11px;color:var(--muted);font-weight:400;}
+  .brand-text{min-width:0;}
+  .brand-text .name{font-weight:700;font-size:15px;letter-spacing:-0.01em;}
+  .brand-text .tag{font-size:11.5px;color:var(--text-faint);margin-top:1px;}
 
-  /* Main */
-  .main{flex:1;min-width:0;padding:32px 40px 80px;max-width:920px;}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
-  .topbar h1{font-size:26px;margin:0;}
-  .topbar .sub{color:var(--muted);font-size:14px;margin-top:4px;}
-  .mode-toggle{
-    display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:3px;
+  .search-wrap{padding:14px 16px 10px 16px;}
+  .search-box{
+    position:relative;
   }
-  .mode-toggle button{
-    border:none;background:none;color:var(--muted);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
+  .search-box svg{
+    position:absolute;left:11px;top:50%;transform:translateY(-50%);
+    color:var(--text-faint);pointer-events:none;
   }
-  .mode-toggle button.active{background:var(--accent);color:#fff;}
+  .search-box input{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:var(--radius-sm);color:var(--text);
+    padding:9px 12px 9px 34px;font-size:13.5px;outline:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .search-box input:focus{border-color:var(--accent);background:#191d27;}
+  .search-box input::placeholder{color:var(--text-faint);}
+
+  .side-scroll{flex:1;overflow-y:auto;padding:6px 12px 12px 12px;}
+  .nav-section-label{
+    font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--text-faint);
+    text-transform:uppercase;padding:14px 10px 6px 10px;
+  }
+  .nav-item{
+    width:100%;display:flex;align-items:center;gap:10px;
+    background:none;border:none;color:var(--text-dim);
+    padding:9px 10px;border-radius:9px;cursor:pointer;font-size:13.5px;
+    text-align:left;transition:background .12s ease,color .12s ease;
+  }
+  .nav-item:hover{background:var(--surface-hover);color:var(--text);}
+  .nav-item.active{background:var(--accent-soft);color:#cfd9ff;font-weight:600;}
+  .nav-item .nav-ico{
+    width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    color:inherit;
+  }
+
+  .cat-list{list-style:none;margin:2px 0 0 0;padding:0;}
+  .cat-item{margin-bottom:1px;}
+  .cat-btn{
+    width:100%;background:none;border:none;color:var(--text);
+    padding:8px 10px;border-radius:9px;cursor:pointer;
+    display:flex;flex-direction:column;gap:5px;text-align:left;
+    transition:background .12s ease;
+  }
+  .cat-btn:hover{background:var(--surface-hover);}
+  .cat-btn.active{background:var(--accent-soft);}
+  .cat-btn-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .cat-btn-left{display:flex;align-items:center;gap:9px;min-width:0;}
+  .cat-btn .swatch{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .cat-btn .cat-title{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cat-btn.active .cat-title{font-weight:600;color:#e9edff;}
+  .cat-btn .cat-count{font-size:10.5px;color:var(--text-faint);flex-shrink:0;font-variant-numeric:tabular-nums;}
+  .cat-mini-bar{height:3px;border-radius:3px;background:var(--border);overflow:hidden;margin-left:16px;}
+  .cat-mini-bar > div{height:100%;border-radius:3px;transition:width .3s ease;}
+
+  .sidebar-footer{
+    padding:14px 18px 18px 18px;border-top:1px solid var(--border-soft);
+    display:flex;align-items:center;gap:12px;
+  }
+  .ring{
+    --pct:0;
+    width:44px;height:44px;border-radius:50%;flex-shrink:0;
+    background:conic-gradient(var(--accent) calc(var(--pct)*1%), var(--border) 0);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ring-inner{
+    width:34px;height:34px;border-radius:50%;background:var(--panel);
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;color:var(--text);
+  }
+  .footer-text{flex:1;min-width:0;}
+  .footer-text .line1{font-size:12.5px;font-weight:600;}
+  .footer-text .line2{font-size:11px;color:var(--text-faint);margin-top:1px;}
+  .reset-link{
+    background:none;border:none;color:var(--text-faint);font-size:11px;
+    cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;
+    flex-shrink:0;
+  }
+  .reset-link:hover{color:#ff8080;}
+
+  /* mobile toggle */
+  .menu-toggle{
+    display:none;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    width:36px;height:36px;border-radius:9px;align-items:center;justify-content:center;
+    cursor:pointer;flex-shrink:0;
+  }
+  .sidebar-backdrop{display:none;}
+
+  /* ============ MAIN ============ */
+  .main{flex:1;min-width:0;}
+  .topbar{
+    position:sticky;top:0;z-index:5;
+    background:rgba(10,11,15,0.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+    padding:16px 40px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .crumb{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-faint);min-width:0;}
+  .crumb b{color:var(--text);font-weight:600;}
+  .crumb-sep{color:var(--text-faint);}
+  .page-h1{font-size:21px;font-weight:700;margin:2px 0 0 0;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .topbar-left{min-width:0;}
+  .topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    padding:8px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease;white-space:nowrap;
+  }
+  .btn:hover{background:var(--surface-hover);border-color:#323847;}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn.primary:hover{background:#4a6ce8;}
+  .btn.ghost{background:none;}
+
+  .content{padding:28px 40px 80px 40px;max-width:1040px;}
+
+  /* ---- overview ---- */
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+  .stat-tile{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:16px 18px;
+  }
+  .stat-tile .stat-num{font-size:24px;font-weight:800;letter-spacing:-0.02em;}
+  .stat-tile .stat-label{font-size:12px;color:var(--text-faint);margin-top:3px;}
+  .stat-tile.accent .stat-num{color:#a9bbff;}
+  .stat-tile.good .stat-num{color:#7ce2a0;}
+
+  .section-heading{font-size:13px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px 0;}
+
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+  .cat-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:18px;cursor:pointer;text-align:left;color:var(--text);
+    display:flex;flex-direction:column;gap:12px;
+    transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease;
+    position:relative;overflow:hidden;
+  }
+  .cat-card:hover{transform:translateY(-2px);border-color:#323847;box-shadow:var(--shadow-md);}
+  .cat-card .card-top{display:flex;align-items:center;justify-content:space-between;}
+  .cat-card .icon-badge{
+    width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:14px;color:#fff;flex-shrink:0;
+  }
+  .cat-card .pct-badge{font-size:11px;font-weight:700;color:var(--text-faint);font-variant-numeric:tabular-nums;}
+  .cat-card .pct-badge.done{color:var(--good);}
+  .cat-card .card-title{font-size:15px;font-weight:700;margin:0;}
+  .cat-card .card-sub{font-size:12px;color:var(--text-faint);margin-top:-6px;}
+  .cat-card .bar{height:5px;border-radius:5px;background:var(--border);overflow:hidden;}
+  .cat-card .bar > div{height:100%;border-radius:5px;transition:width .3s ease;}
+  .cat-card .card-cta{font-size:12px;font-weight:600;color:var(--text-dim);display:flex;align-items:center;gap:4px;}
+  .cat-card:hover .card-cta{color:#cfd9ff;}
+
+  /* ---- category detail ---- */
+  .cat-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .cat-detail-head .icon-badge{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;flex-shrink:0;}
+  .cat-detail-head h2{font-size:20px;margin:0;}
+  .cat-detail-head .meta{color:var(--text-faint);font-size:12.5px;margin-top:2px;}
 
   .topic-card{
-    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
-    padding:20px 22px;margin-bottom:16px;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:20px 22px;margin-bottom:14px;
+    border-left:3px solid var(--border);
+    transition:border-color .15s ease;
   }
-  .topic-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-  .topic-title{font-size:17px;font-weight:700;margin:0 0 10px 0;}
+  .topic-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+  .topic-title-row{display:flex;align-items:baseline;gap:10px;min-width:0;}
+  .topic-num{font-size:11.5px;font-weight:700;color:var(--text-faint);font-variant-numeric:tabular-nums;flex-shrink:0;}
+  .topic-title{font-size:16.5px;font-weight:700;margin:0;}
   .done-check{
-    display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--muted);font-size:12px;user-select:none;flex-shrink:0;
+    display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-faint);font-size:12px;user-select:none;flex-shrink:0;
+    padding:4px 9px 4px 6px;border-radius:20px;border:1px solid var(--border);transition:all .15s ease;
   }
-  .done-check input{accent-color:var(--good);width:16px;height:16px;cursor:pointer;}
-  .topic-card.done{border-color:rgba(46,204,113,0.4);}
-  .topic-card.done .topic-title{color:#c7f5da;}
-  ul.points{margin:0;padding-left:20px;}
-  ul.points li{margin-bottom:7px;color:#d6d9e4;font-size:14.5px;}
+  .done-check:hover{border-color:#3a4154;}
+  .done-check input{accent-color:var(--good);width:15px;height:15px;cursor:pointer;}
+  .topic-card.done{border-left-color:var(--good);}
+  .topic-card.done .topic-title{color:#cdf5db;}
+  .topic-card.done .done-check{background:var(--good-soft);border-color:rgba(34,197,94,0.35);color:#8fe3ab;}
+
+  ul.points{margin:14px 0 0 0;padding-left:20px;}
+  ul.points li{margin-bottom:8px;color:#d3d7e3;font-size:14.5px;}
   ul.points li code, .qa code{
-    background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px;
-  }
-  .qa-block{margin-top:14px;padding-top:14px;border-top:1px dashed var(--border);}
-  .qa-item{margin-bottom:10px;}
-  .qa-q{font-weight:600;color:#cdd8ff;font-size:14px;margin-bottom:3px;}
-  .qa-a{color:var(--muted);font-size:13.5px;}
-
-  .cat-header{margin-bottom:18px;}
-  .cat-header h2{font-size:22px;margin:0 0 4px 0;}
-  .cat-header .meta{color:var(--muted);font-size:13px;}
-
-  .cheat-list{list-style:none;margin:0;padding:0;}
-  .cheat-list li{
-    background:var(--panel);border:1px solid var(--border);border-radius:10px;
-    padding:12px 16px;margin-bottom:8px;font-size:14.5px;color:#d6d9e4;
+    background:var(--panel-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
 
-  footer.note{margin-top:30px;color:var(--muted);font-size:12px;}
+  details.qa-block{margin-top:16px;padding-top:14px;border-top:1px dashed var(--border);}
+  details.qa-block summary{
+    cursor:pointer;font-size:12.5px;font-weight:700;color:var(--text-dim);
+    list-style:none;display:flex;align-items:center;gap:6px;user-select:none;
+  }
+  details.qa-block summary::-webkit-details-marker{display:none;}
+  details.qa-block summary .chev{transition:transform .15s ease;flex-shrink:0;}
+  details.qa-block[open] summary .chev{transform:rotate(90deg);}
+  details.qa-block summary .qcount{color:var(--text-faint);font-weight:500;}
+  .qa-item{margin-top:14px;padding:12px 14px;background:var(--panel-2);border-radius:var(--radius-sm);}
+  .qa-item + .qa-item{margin-top:10px;}
+  .qa-q{font-weight:600;color:#cfd9ff;font-size:13.5px;margin-bottom:4px;}
+  .qa-a{color:var(--text-dim);font-size:13.5px;}
 
-  @media (max-width: 860px){
-    .app{flex-direction:column;}
-    .sidebar{width:100%;height:auto;position:relative;border-right:none;border-bottom:1px solid var(--border);}
-    .main{padding:22px 16px 60px;}
+  /* ---- quick revision ---- */
+  .rev-cat-header{margin:30px 0 14px 0;display:flex;align-items:center;gap:10px;}
+  .rev-cat-header:first-child{margin-top:0;}
+  .rev-cat-header .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .rev-cat-header h2{font-size:17px;margin:0;}
+  .rev-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:14px 18px;margin-bottom:8px;
+  }
+  .rev-card h3{font-size:14.5px;margin:0 0 8px 0;}
+  .rev-card ul.points{margin-top:0;}
+  .rev-card ul.points li{font-size:13.5px;margin-bottom:6px;}
+
+  /* ---- search results ---- */
+  .search-result{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:14px 18px;margin-bottom:8px;cursor:pointer;transition:border-color .12s ease,background .12s ease;
+  }
+  .search-result:hover{border-color:#323847;background:var(--surface-hover);}
+  .search-result .sr-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .search-result .sr-tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;}
+  .search-result h3{font-size:14.5px;margin:0;}
+  .search-result p{font-size:13px;color:var(--text-faint);margin:0;}
+  .empty-state{padding:60px 20px;text-align:center;color:var(--text-faint);}
+  .empty-state svg{margin-bottom:12px;opacity:.5;}
+  .empty-state p{font-size:14px;margin:0;}
+
+  footer.note{margin-top:34px;color:var(--text-faint);font-size:12px;text-align:center;}
+
+  @media (max-width: 900px){
+    .sidebar{
+      position:fixed;left:0;top:0;height:100vh;z-index:30;
+      transform:translateX(-100%);transition:transform .22s ease;
+      box-shadow:24px 0 60px rgba(0,0,0,0.4);
+    }
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-backdrop.show{
+      display:block;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:25;
+    }
+    .menu-toggle{display:flex;}
+    .topbar{padding:14px 18px;}
+    .content{padding:20px 18px 60px 18px;}
+    .stat-row{grid-template-columns:repeat(2,1fr);}
   }
 </style>
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand"><span class="dot"></span> JavaPrep</div>
-    <div class="progress-box">
-      <div class="label"><span>Progress</span><span id="progressText">0%</span></div>
-      <div class="progress-bar"><div id="progressFill" style="width:0%"></div></div>
+  <div class="sidebar-backdrop" id="backdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row">
+      <div class="brand-mark">J</div>
+      <div class="brand-text">
+        <div class="name">JavaPrep</div>
+        <div class="tag">Interview companion</div>
+      </div>
     </div>
-    <ul class="cat-list" id="catList"></ul>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search topics, points, questions…" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="side-scroll">
+      <button class="nav-item" id="navOverview">
+        <span class="nav-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>
+        Overview
+      </button>
+      <button class="nav-item" id="navRevision">
+        <span class="nav-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>
+        Quick Revision
+      </button>
+
+      <div class="nav-section-label">Categories</div>
+      <ul class="cat-list" id="catList"></ul>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="ring" id="ringOuter">
+        <div class="ring-inner" id="ringInner">0%</div>
+      </div>
+      <div class="footer-text">
+        <div class="line1" id="progressLine1">0 / 0 done</div>
+        <div class="line2">Saved in this browser</div>
+      </div>
+      <button class="reset-link" id="resetBtn" title="Reset all progress">Reset</button>
+    </div>
   </aside>
+
   <main class="main">
     <div class="topbar">
-      <div>
-        <h1 id="pageTitle">Java Interview Prep</h1>
-        <div class="sub" id="pageSub">Pick a topic on the left, or switch to Quick Revision to scan every point at once.</div>
+      <div class="topbar-left">
+        <div class="crumb" id="crumb"><b>Overview</b></div>
+        <h1 class="page-h1" id="pageTitle">Java Interview Prep</h1>
       </div>
-      <div class="mode-toggle">
-        <button id="modeDetail" class="active">Detailed</button>
-        <button id="modeRevision">Quick Revision</button>
+      <div class="topbar-right" id="topbarActions">
+        <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </div>
     </div>
-    <div id="content"></div>
-    <footer class="note">Tick "done" on a topic once you've revised it — your progress is saved in this browser.</footer>
+    <div class="content" id="content"></div>
   </main>
 </div>
 
@@ -153,159 +390,261 @@
 <script>
 (function(){
   const STORAGE_KEY = "javaprep_done_v1";
-  const done = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch(e){ done = {}; }
 
-  function saveDone(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }
+  function saveDone(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch(e){}
+  }
   function topicKey(catId, idx){ return catId + "::" + idx; }
 
-  let activeCat = CATEGORIES[0].id;
-  let mode = "detail"; // or "revision"
+  let view = "overview";   // 'overview' | 'category' | 'revision'
+  let activeCat = null;
+  let query = "";
 
   const catListEl = document.getElementById("catList");
   const contentEl = document.getElementById("content");
   const pageTitle = document.getElementById("pageTitle");
-  const pageSub = document.getElementById("pageSub");
-  const progressFill = document.getElementById("progressFill");
-  const progressText = document.getElementById("progressText");
+  const crumbEl = document.getElementById("crumb");
+  const topbarActions = document.getElementById("topbarActions");
+  const searchInput = document.getElementById("searchInput");
+  const ringOuter = document.getElementById("ringOuter");
+  const ringInner = document.getElementById("ringInner");
+  const progressLine1 = document.getElementById("progressLine1");
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("backdrop");
 
-  function totalTopics(){
-    return CATEGORIES.reduce((sum,c)=>sum+c.topics.length,0);
-  }
-  function doneCount(){
-    return Object.values(done).filter(Boolean).length;
-  }
-  function updateProgress(){
-    const total = totalTopics();
-    const d = doneCount();
-    const pct = total ? Math.round((d/total)*100) : 0;
-    progressFill.style.width = pct + "%";
-    progressText.textContent = d + " / " + total + " (" + pct + "%)";
+  function totalTopics(){ return CATEGORIES.reduce((s,c)=>s+c.topics.length,0); }
+  function doneCount(){ return Object.values(done).filter(Boolean).length; }
+  function doneInCat(cat){ return cat.topics.filter((_,i)=>done[topicKey(cat.id,i)]).length; }
+  function pct(n,t){ return t ? Math.round((n/t)*100) : 0; }
+
+  function esc(s){
+    return String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
   }
 
+  function initials(title){
+    const words = title.replace(/[^A-Za-z0-9 +]/g," ").trim().split(/\s+/);
+    if (words.length === 1) return words[0].slice(0,2).toUpperCase();
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+
+  /* ---------------- sidebar ---------------- */
   function renderSidebar(){
+    document.getElementById("navOverview").classList.toggle("active", view === "overview" && !query);
+    document.getElementById("navRevision").classList.toggle("active", view === "revision" && !query);
+
     catListEl.innerHTML = "";
     CATEGORIES.forEach(cat=>{
+      const d = doneInCat(cat), t = cat.topics.length, p = pct(d,t);
       const li = document.createElement("li");
       li.className = "cat-item";
       const btn = document.createElement("button");
-      btn.className = "cat-btn" + (cat.id === activeCat ? " active" : "");
-      const doneInCat = cat.topics.filter((_,i)=>done[topicKey(cat.id,i)]).length;
+      btn.className = "cat-btn" + (view === "category" && activeCat === cat.id && !query ? " active" : "");
       btn.innerHTML =
-        '<span style="display:flex;align-items:center;gap:8px;"><span class="swatch" style="background:'+cat.color+'"></span>'+cat.title+'</span>'+
-        '<span class="count">'+doneInCat+'/'+cat.topics.length+'</span>';
-      btn.onclick = ()=>{ activeCat = cat.id; render(); };
+        '<div class="cat-btn-top">'+
+          '<div class="cat-btn-left"><span class="swatch" style="background:'+cat.color+'"></span><span class="cat-title">'+esc(cat.title)+'</span></div>'+
+          '<span class="cat-count">'+d+'/'+t+'</span>'+
+        '</div>'+
+        '<div class="cat-mini-bar"><div style="width:'+p+'%;background:'+cat.color+'"></div></div>';
+      btn.onclick = ()=>{ view="category"; activeCat=cat.id; query=""; searchInput.value=""; closeMobileSidebar(); render(); };
       li.appendChild(btn);
       catListEl.appendChild(li);
     });
   }
 
-  function renderDetail(){
+  function renderOverallProgress(){
+    const total = totalTopics(), d = doneCount(), p = pct(d,total);
+    ringOuter.style.setProperty("--pct", p);
+    ringInner.textContent = p + "%";
+    progressLine1.textContent = d + " / " + total + " done";
+  }
+
+  /* ---------------- overview page ---------------- */
+  function renderOverview(){
+    pageTitle.textContent = "Overview";
+    crumbEl.innerHTML = "<b>Overview</b>";
+    topbarActions.innerHTML = "";
+    topbarActions.appendChild(menuToggleClone());
+
+    const total = totalTopics(), d = doneCount(), p = pct(d,total);
+    let html = '<div class="stat-row">'+
+      statTile(CATEGORIES.length, "Categories", "") +
+      statTile(total, "Total topics", "accent") +
+      statTile(d, "Completed", "good") +
+      statTile(p + "%", "Overall progress", "") +
+    '</div>';
+
+    html += '<div class="section-heading">Browse by category</div><div class="cat-grid">';
+    CATEGORIES.forEach(cat=>{
+      const cd = doneInCat(cat), t = cat.topics.length, cp = pct(cd,t);
+      const label = cp === 0 ? "Start" : (cp === 100 ? "Review again" : "Continue");
+      html += '<button class="cat-card" data-cat="'+cat.id+'">'+
+        '<div class="card-top">'+
+          '<div class="icon-badge" style="background:'+cat.color+'">'+initials(cat.title)+'</div>'+
+          '<div class="pct-badge'+(cp===100?' done':'')+'">'+cp+'%</div>'+
+        '</div>'+
+        '<div><p class="card-title">'+esc(cat.title)+'</p><p class="card-sub">'+t+' topic'+(t===1?"":"s")+' · '+cd+' done</p></div>'+
+        '<div class="bar"><div style="width:'+cp+'%;background:'+cat.color+'"></div></div>'+
+        '<div class="card-cta">'+label+' <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></div>'+
+      '</button>';
+    });
+    html += '</div>';
+
+    contentEl.innerHTML = html;
+    contentEl.querySelectorAll(".cat-card").forEach(card=>{
+      card.onclick = ()=>{ view="category"; activeCat=card.getAttribute("data-cat"); render(); };
+    });
+  }
+
+  function statTile(num,label,cls){
+    return '<div class="stat-tile '+cls+'"><div class="stat-num">'+num+'</div><div class="stat-label">'+label+'</div></div>';
+  }
+
+  function menuToggleClone(){
+    const b = document.createElement("button");
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label","Open menu");
+    b.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+    b.onclick = openMobileSidebar;
+    return b;
+  }
+
+  /* ---------------- category detail ---------------- */
+  function renderCategoryDetail(){
     const cat = CATEGORIES.find(c=>c.id===activeCat);
+    if (!cat){ view="overview"; return renderOverview(); }
+    const d = doneInCat(cat), t = cat.topics.length;
+
     pageTitle.textContent = cat.title;
-    pageSub.textContent = cat.topics.length + " topic" + (cat.topics.length===1?"":"s") + " in this category";
-    contentEl.innerHTML = "";
+    crumbEl.innerHTML = '<a href="#" id="crumbHome"><b>Overview</b></a><span class="crumb-sep">/</span>'+esc(cat.title);
+
+    topbarActions.innerHTML = "";
+    const allDone = d === t;
+    const markBtn = document.createElement("button");
+    markBtn.className = "btn" + (allDone ? "" : " primary");
+    markBtn.textContent = allDone ? "Mark all undone" : "Mark all done";
+    markBtn.onclick = ()=>{
+      cat.topics.forEach((_,i)=>{ done[topicKey(cat.id,i)] = !allDone; });
+      saveDone(); render();
+    };
+    topbarActions.appendChild(markBtn);
+    topbarActions.appendChild(menuToggleClone());
+
+    let html = '<div class="cat-detail-head">'+
+      '<div class="icon-badge" style="background:'+cat.color+'">'+initials(cat.title)+'</div>'+
+      '<div><h2>'+esc(cat.title)+'</h2><div class="meta">'+t+' topic'+(t===1?"":"s")+' · '+d+' of '+t+' completed</div></div>'+
+    '</div>';
+
     cat.topics.forEach((topic, idx)=>{
       const key = topicKey(cat.id, idx);
       const isDone = !!done[key];
-      const card = document.createElement("div");
-      card.className = "topic-card" + (isDone ? " done" : "");
+      html += '<div class="topic-card'+(isDone?" done":"")+'" style="'+(isDone?"":("border-left-color:"+cat.color))+'">'+
+        '<div class="topic-head">'+
+          '<div class="topic-title-row"><span class="topic-num">'+String(idx+1).padStart(2,"0")+'</span><h3 class="topic-title">'+esc(topic.title)+'</h3></div>'+
+          '<label class="done-check"><input type="checkbox" data-key="'+key+'" '+(isDone?"checked":"")+'/> done</label>'+
+        '</div>'+
+        '<ul class="points">'+topic.points.map(p=>'<li>'+esc(p)+'</li>').join("")+'</ul>'+
+        (topic.qa && topic.qa.length ?
+          '<details class="qa-block"><summary><svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg> Sample interview Q&amp;A <span class="qcount">('+topic.qa.length+')</span></summary>'+
+          topic.qa.map(pair=>'<div class="qa-item"><div class="qa-q">Q: '+esc(pair.q)+'</div><div class="qa-a">A: '+esc(pair.a)+'</div></div>').join("")+
+          '</details>' : "") +
+      '</div>';
+    });
 
-      const head = document.createElement("div");
-      head.className = "topic-head";
-      const h3 = document.createElement("h3");
-      h3.className = "topic-title";
-      h3.textContent = topic.title;
-      const label = document.createElement("label");
-      label.className = "done-check";
-      label.innerHTML = '<input type="checkbox" '+(isDone?"checked":"")+'/> done';
-      label.querySelector("input").onchange = (e)=>{
-        done[key] = e.target.checked;
-        saveDone();
+    contentEl.innerHTML = html;
+
+    const home = document.getElementById("crumbHome");
+    if (home) home.onclick = (e)=>{ e.preventDefault(); view="overview"; render(); };
+
+    contentEl.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb=>{
+      cb.onchange = (e)=>{ done[e.target.getAttribute("data-key")] = e.target.checked; saveDone(); render(); };
+    });
+  }
+
+  /* ---------------- quick revision ---------------- */
+  function renderRevisionView(){
+    pageTitle.textContent = "Quick Revision";
+    crumbEl.innerHTML = "<b>Quick Revision</b>";
+    topbarActions.innerHTML = "";
+    topbarActions.appendChild(menuToggleClone());
+
+    let html = '<p style="color:var(--text-faint);font-size:13.5px;margin-top:-8px;">Every point, every category, one scroll — ideal for the 10 minutes before an interview.</p>';
+    CATEGORIES.forEach(cat=>{
+      html += '<div class="rev-cat-header"><span class="dot" style="background:'+cat.color+'"></span><h2>'+esc(cat.title)+'</h2></div>';
+      cat.topics.forEach(topic=>{
+        html += '<div class="rev-card"><h3>'+esc(topic.title)+'</h3><ul class="points">'+
+          topic.points.map(p=>'<li>'+esc(p)+'</li>').join("")+'</ul></div>';
+      });
+    });
+    contentEl.innerHTML = html;
+  }
+
+  /* ---------------- search ---------------- */
+  function renderSearch(){
+    const q = query.trim().toLowerCase();
+    pageTitle.textContent = "Search";
+    crumbEl.innerHTML = '<b>Search</b><span class="crumb-sep">·</span>"'+esc(query)+'"';
+    topbarActions.innerHTML = "";
+    topbarActions.appendChild(menuToggleClone());
+
+    const results = [];
+    CATEGORIES.forEach(cat=>{
+      cat.topics.forEach((topic, idx)=>{
+        const hay = (topic.title + " " + topic.points.join(" ") + " " + (topic.qa||[]).map(p=>p.q+" "+p.a).join(" ")).toLowerCase();
+        if (hay.includes(q)) results.push({cat, idx, topic});
+      });
+    });
+
+    if (!results.length){
+      contentEl.innerHTML = '<div class="empty-state">'+
+        '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'+
+        '<p>No topics match "'+esc(query)+'"</p></div>';
+      return;
+    }
+
+    let html = '<p style="color:var(--text-faint);font-size:13px;margin-top:-8px;">'+results.length+' result'+(results.length===1?"":"s")+'</p>';
+    results.forEach(r=>{
+      html += '<div class="search-result" data-cat="'+r.cat.id+'">'+
+        '<div class="sr-top"><span class="sr-tag" style="background:'+r.cat.color+'">'+esc(r.cat.title)+'</span></div>'+
+        '<h3>'+esc(r.topic.title)+'</h3>'+
+        '<p>'+esc(r.topic.points[0] || "")+'</p>'+
+      '</div>';
+    });
+    contentEl.innerHTML = html;
+    contentEl.querySelectorAll(".search-result").forEach(el=>{
+      el.onclick = ()=>{
+        view="category"; activeCat = el.getAttribute("data-cat"); query=""; searchInput.value="";
         render();
       };
-      head.appendChild(h3);
-      head.appendChild(label);
-      card.appendChild(head);
-
-      const ul = document.createElement("ul");
-      ul.className = "points";
-      topic.points.forEach(p=>{
-        const li = document.createElement("li");
-        li.textContent = p;
-        ul.appendChild(li);
-      });
-      card.appendChild(ul);
-
-      if (topic.qa && topic.qa.length){
-        const qaBlock = document.createElement("div");
-        qaBlock.className = "qa-block";
-        topic.qa.forEach(pair=>{
-          const item = document.createElement("div");
-          item.className = "qa-item";
-          const q = document.createElement("div");
-          q.className = "qa-q";
-          q.textContent = "Q: " + pair.q;
-          const a = document.createElement("div");
-          a.className = "qa-a";
-          a.textContent = "A: " + pair.a;
-          item.appendChild(q);
-          item.appendChild(a);
-          qaBlock.appendChild(item);
-        });
-        card.appendChild(qaBlock);
-      }
-
-      contentEl.appendChild(card);
     });
   }
 
-  function renderRevision(){
-    pageTitle.textContent = "Quick Revision — All Topics";
-    pageSub.textContent = "Every point, every category, one scroll. Good for the 10 minutes before an interview.";
-    contentEl.innerHTML = "";
-    CATEGORIES.forEach(cat=>{
-      const catHeader = document.createElement("div");
-      catHeader.className = "cat-header";
-      catHeader.innerHTML = '<h2 style="color:'+cat.color+'">'+cat.title+'</h2>';
-      contentEl.appendChild(catHeader);
+  /* ---------------- mobile sidebar ---------------- */
+  function openMobileSidebar(){ sidebar.classList.add("open"); backdrop.classList.add("show"); }
+  function closeMobileSidebar(){ sidebar.classList.remove("open"); backdrop.classList.remove("show"); }
+  document.getElementById("menuToggle").onclick = openMobileSidebar;
+  backdrop.onclick = closeMobileSidebar;
 
-      cat.topics.forEach(topic=>{
-        const card = document.createElement("div");
-        card.className = "topic-card";
-        card.innerHTML = '<h3 class="topic-title">'+topic.title+'</h3>';
-        const ul = document.createElement("ul");
-        ul.className = "points";
-        topic.points.forEach(p=>{
-          const li = document.createElement("li");
-          li.textContent = p;
-          ul.appendChild(li);
-        });
-        card.appendChild(ul);
-        contentEl.appendChild(card);
-      });
-    });
-  }
+  /* ---------------- wiring ---------------- */
+  document.getElementById("navOverview").onclick = ()=>{ view="overview"; activeCat=null; query=""; searchInput.value=""; closeMobileSidebar(); render(); };
+  document.getElementById("navRevision").onclick = ()=>{ view="revision"; query=""; searchInput.value=""; closeMobileSidebar(); render(); };
+  document.getElementById("resetBtn").onclick = ()=>{
+    if (confirm("Reset all progress? This clears every checked topic in this browser.")){
+      done = {}; saveDone(); render();
+    }
+  };
+  searchInput.addEventListener("input", (e)=>{ query = e.target.value; render(); });
 
   function render(){
     renderSidebar();
-    updateProgress();
-    if (mode === "detail") renderDetail();
-    else renderRevision();
+    renderOverallProgress();
+    if (query.trim()) renderSearch();
+    else if (view === "overview") renderOverview();
+    else if (view === "revision") renderRevisionView();
+    else if (view === "category") renderCategoryDetail();
     window.scrollTo(0,0);
   }
-
-  document.getElementById("modeDetail").onclick = ()=>{
-    mode = "detail";
-    document.getElementById("modeDetail").classList.add("active");
-    document.getElementById("modeRevision").classList.remove("active");
-    render();
-  };
-  document.getElementById("modeRevision").onclick = ()=>{
-    mode = "revision";
-    document.getElementById("modeRevision").classList.add("active");
-    document.getElementById("modeDetail").classList.remove("active");
-    render();
-  };
 
   render();
 })();
