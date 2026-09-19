@@ -8,6 +8,7 @@
 <meta name="description" content="A complete, checklist-style Java interview prep companion — quick revision points, common interview questions, and progress tracking, all in one page." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23111318'/%3E%3Ctext x='50' y='69' font-size='56' font-family='Arial, sans-serif' font-weight='700' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E" />
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap');
   :root{
     --bg:#fafafa;
     --panel:#ffffff;
@@ -28,7 +29,12 @@
     --radius-sm:8px;
     --shadow-md:0 12px 32px -16px rgba(0,0,0,0.14);
     --sidebar-w:296px;
+    --checklist-w:280px;
+    --code-bg:#1c1e22;
+    --code-text:#e7e9ee;
     --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-serif:'Source Serif 4',Georgia,serif;
+    --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -285,46 +291,113 @@
   .cat-detail-head h2{font-size:20px;margin:0;}
   .cat-detail-head .meta{color:var(--text-faint);font-size:12.5px;margin-top:2px;}
 
-  .topic-card{
-    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
-    padding:20px 22px;margin-bottom:14px;
-    border-left:3px solid var(--border);
-    transition:border-color .15s ease;
+  /* ---- category detail: two-column layout (article + checklist) ---- */
+  .cat-detail-wrap{display:flex;align-items:flex-start;gap:0;margin:0 -40px;}
+  .cat-detail-main{flex:1;min-width:0;padding:0 40px;max-width:820px;}
+  .cat-checklist{
+    width:var(--checklist-w);flex-shrink:0;border-left:1px solid var(--border);
+    padding:2px 24px 0 24px;position:sticky;top:73px;
+    max-height:calc(100vh - 90px);overflow-y:auto;
   }
-  .topic-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
-  .topic-title-row{display:flex;align-items:baseline;gap:10px;min-width:0;}
-  .topic-num{font-size:11.5px;font-weight:700;color:var(--text-faint);font-variant-numeric:tabular-nums;flex-shrink:0;}
-  .topic-title{font-size:16.5px;font-weight:700;margin:0;}
+  .cat-checklist-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .cat-checklist-title{font-size:12.5px;font-weight:800;}
+  .cat-checklist-count{font-size:11.5px;color:var(--text-faint);font-weight:700;font-variant-numeric:tabular-nums;}
+  .cat-checklist-bar{height:6px;border-radius:4px;background:var(--border-soft);margin-bottom:16px;overflow:hidden;}
+  .cat-checklist-bar > div{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.3,.8,.4,1);}
+  .checklist-row{
+    display:flex;align-items:center;gap:9px;padding:8px 8px;border-radius:8px;cursor:pointer;
+    transition:background .15s ease;
+  }
+  .checklist-row:hover{background:var(--surface-hover);}
+  .checklist-row.active{background:var(--accent-soft);}
+  .checklist-box{
+    width:15px;height:15px;border-radius:4px;border:1.5px solid #c7c9d1;flex-shrink:0;
+    display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;
+  }
+  .checklist-row.done .checklist-box{background:var(--good);border-color:var(--good);}
+  .checklist-label{font-size:12.5px;color:var(--text);flex-grow:1;line-height:1.35;}
+  .checklist-row.done .checklist-label{color:var(--text-faint);text-decoration:line-through;}
+  .checklist-row.active .checklist-label{font-weight:600;}
+
+  @media (max-width: 1180px){
+    .cat-detail-wrap{margin:0;}
+    .cat-checklist{display:none;}
+  }
+
+  /* ---- article-style topic card ---- */
+  @keyframes riseIn{ from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+  @keyframes checkPop{ 0%{transform:scale(.6);opacity:0;} 60%{transform:scale(1.15);} 100%{transform:scale(1);opacity:1;} }
+
+  .topic-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    margin-bottom:20px;overflow:hidden;
+    animation:riseIn .45s cubic-bezier(.2,.7,.3,1) both;
+    transition:box-shadow .22s ease,transform .22s ease,border-color .22s ease;
+  }
+  .topic-card:hover{box-shadow:0 10px 26px rgba(20,20,30,0.07);border-color:#d9dbe1;transform:translateY(-2px);}
+  .topic-card-inner{padding:24px 26px 22px;}
+  .topic-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;}
+  .topic-title-row{display:flex;align-items:center;gap:9px;min-width:0;}
+  .topic-num{font-size:12px;font-weight:800;color:var(--text-faint);letter-spacing:.03em;flex-shrink:0;}
+  .topic-title-row .dot{width:3px;height:3px;border-radius:50%;background:var(--text-faint);flex-shrink:0;}
+  .topic-title{font-size:19px;font-weight:700;margin:0;letter-spacing:-0.01em;font-family:var(--font-serif);}
   .done-check{
     display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-faint);font-size:12px;user-select:none;flex-shrink:0;
-    padding:4px 9px 4px 6px;border-radius:20px;border:1px solid var(--border);transition:all .15s ease;
+    padding:5px 12px 5px 9px;border-radius:20px;border:1px solid var(--border);transition:all .15s ease;
   }
   .done-check:hover{border-color:#c8c8ce;}
-  .done-check input{accent-color:var(--good);width:15px;height:15px;cursor:pointer;}
-  .topic-card.done{border-left-color:var(--good);}
-  .topic-card.done .topic-title{color:var(--text);}
-  .topic-card.done .done-check{background:var(--good-soft);border-color:rgba(22,163,74,0.3);color:var(--good);}
+  .done-check input{display:none;}
+  .done-check .box{width:14px;height:14px;border-radius:4px;border:1.5px solid #c7c9d1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .topic-card.done{box-shadow:0 4px 16px rgba(20,20,30,0.05);}
+  .topic-card.done .done-check{background:var(--good-soft);border-color:rgba(22,163,74,0.3);color:var(--good);font-weight:700;}
+  .topic-card.done .done-check .box{background:var(--good);border-color:var(--good);animation:checkPop .3s cubic-bezier(.3,1.4,.6,1) both;}
 
-  ul.points{margin:14px 0 0 0;padding-left:20px;}
-  ul.points li{margin-bottom:8px;color:#3f3f46;font-size:14.5px;}
-  ul.points li code, .qa code{
-    background:var(--panel-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  .topic-body{font-size:15px;line-height:1.75;color:#2b2c33;}
+  .topic-body code{
+    background:var(--panel-2);border-radius:5px;padding:1.5px 6px;font-size:13px;font-family:var(--font-mono);
   }
 
-  details.qa-block{margin-top:16px;padding-top:14px;border-top:1px dashed var(--border);}
-  details.qa-block summary{
-    cursor:pointer;font-size:12.5px;font-weight:700;color:var(--text-dim);
-    list-style:none;display:flex;align-items:center;gap:6px;user-select:none;
+  .code-block{background:var(--code-bg);border:1px solid #2b2d33;border-radius:12px;overflow:hidden;margin-top:16px;transition:border-color .2s ease;}
+  .code-block:hover{border-color:#3a3d45;}
+  .code-block-head{display:flex;align-items:center;gap:7px;padding:10px 16px;border-bottom:1px solid #2b2d33;}
+  .code-block-head .dot{width:9px;height:9px;border-radius:50%;}
+  .code-block-head .fname{margin-left:8px;font-size:11.5px;color:#8b8e98;font-weight:500;font-family:var(--font);}
+  .code-block pre{
+    margin:0;padding:16px 18px;font-size:13px;line-height:1.8;color:var(--code-text);
+    white-space:pre;overflow-x:auto;font-family:var(--font-mono);
   }
-  details.qa-block summary::-webkit-details-marker{display:none;}
-  details.qa-block summary .chev{transition:transform .15s ease;flex-shrink:0;}
-  details.qa-block[open] summary .chev{transform:rotate(90deg);}
-  details.qa-block summary .qcount{color:var(--text-faint);font-weight:500;}
-  .qa-item{margin-top:14px;padding:12px 14px;background:var(--panel-2);border-radius:var(--radius-sm);}
-  .qa-item + .qa-item{margin-top:10px;}
-  .qa-q{font-weight:600;color:var(--text);font-size:13.5px;margin-bottom:4px;}
-  .qa-a{color:var(--text-dim);font-size:13.5px;}
+  .code-cmt{color:#6b7280;}
+  .code-kw{color:#ff7b72;}
+  .code-type{color:#7ee787;}
+  .code-str{color:#a5d6ff;}
+  .code-num{color:#79c0ff;}
+  .code-var{color:#d2a8ff;}
+
+  .diagram-row{display:flex;align-items:center;gap:16px;margin-top:16px;border:1px solid var(--border);border-radius:12px;padding:16px 18px;background:#fafbfc;}
+  .diagram-row-3 > .diagram-col, .diagram-row-4 > .diagram-col{flex:1;}
+  .diagram-col{flex:1;text-align:center;}
+  .diagram-label{font-size:10.5px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px;}
+  .diagram-chip, .diagram-block{background:var(--accent-soft);border:1px solid #cfd3ee;border-radius:7px;padding:8px;font-size:12px;font-weight:600;color:#33344a;margin-bottom:6px;}
+  .diagram-chip-dashed{background:#fff;border:1.5px dashed #c7c9d1;color:var(--text-dim);padding:14px 8px;}
+  .diagram-sub{font-size:10.5px;color:var(--text-faint);font-weight:500;margin-top:3px;}
+  .diagram-arrow{color:var(--text-faint);font-size:18px;flex-shrink:0;}
+
+  .diagram-pipeline{display:flex;align-items:center;gap:10px;margin-top:16px;border:1px solid var(--border);border-radius:12px;padding:16px 18px;background:#fafbfc;flex-wrap:wrap;}
+  .diagram-step{flex:1;min-width:88px;text-align:center;background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:12px 8px;font-size:12px;font-weight:700;color:var(--text-dim);}
+  .diagram-step-accent{background:var(--good-soft);border-color:rgba(22,163,74,.3);color:var(--good);}
+
+  .diagram-tree{margin-top:16px;border:1px solid var(--border);border-radius:12px;padding:20px 18px;background:#fafbfc;text-align:center;}
+  .diagram-tree-root{display:inline-block;background:var(--accent);color:#fff;font-size:12.5px;font-weight:700;padding:8px 18px;border-radius:8px;margin-bottom:16px;}
+  .diagram-tree-children{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .diagram-tree-node{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:12.5px;font-weight:700;color:var(--text);}
+
+  ul.points{margin:0;padding-left:20px;}
+  ul.points li{margin-bottom:9px;color:#2b2c33;font-size:15px;line-height:1.7;}
+  ul.points li:last-child{margin-bottom:0;}
+  ul.points li code{
+    background:var(--panel-2);border-radius:5px;padding:1.5px 6px;font-size:13px;
+    font-family:var(--font-mono);
+  }
 
   /* ---- quick revision ---- */
   .rev-cat-header{margin:30px 0 14px 0;display:flex;align-items:center;gap:10px;}
@@ -684,6 +757,44 @@
     return (words[0][0] + words[1][0]).toUpperCase();
   }
 
+  /* very small Java-flavoured syntax highlighter — good enough for short snippets.
+     Single-pass tokenizer: every match is handled in ONE regex.replace call, so
+     injected <span> markup is never re-scanned by a later pass. */
+  const JAVA_KEYWORD_LIST = "public|private|protected|static|final|abstract|class|interface|enum|extends|implements|new|return|if|else|for|while|do|switch|case|default|break|continue|try|catch|finally|throw|throws|this|super|void|synchronized|volatile|transient|package|import|instanceof|null|true|false|var";
+  const JAVA_TYPE_LIST = "int|long|short|byte|float|double|char|boolean|String|Integer|Long|Double|Float|Boolean|Character|Object|List|ArrayList|LinkedList|Map|HashMap|TreeMap|LinkedHashMap|Set|HashSet|TreeSet|LinkedHashSet|Deque|ArrayDeque|Queue|PriorityQueue|Optional|Stream|Collectors|Thread|Runnable|Callable|Future|CompletableFuture|ExecutorService|Executors|AtomicInteger|ReentrantLock|Comparator|Comparable|Number|Exception|RuntimeException|IOException|Path|Files|Scanner|BufferedReader|BufferedWriter|FileReader|FileWriter|InputStream|OutputStream|Reader|Writer|Class";
+  const JAVA_TOKEN_RE = new RegExp(
+    "(//[^\\n]*)" +                       // 1: line comment
+    "|(\"[^\"]*\")" +                     // 2: string literal
+    "|\\b(" + JAVA_TYPE_LIST + ")\\b" +   // 3: type
+    "|\\b(" + JAVA_KEYWORD_LIST + ")\\b" +// 4: keyword
+    "|\\b(\\d[\\d_]*\\.?\\d*[fFlLdD]?)\\b", // 5: number
+    "g"
+  );
+
+  function highlightCode(code){
+    const escaped = esc(code); // escape & < > once, up front — never touched again
+    return escaped.replace(JAVA_TOKEN_RE, (m, cmt, str, type, kw, num) => {
+      if (cmt !== undefined) return '<span class="code-cmt">' + cmt + '</span>';
+      if (str !== undefined) return '<span class="code-str">' + str + '</span>';
+      if (type !== undefined) return '<span class="code-type">' + type + '</span>';
+      if (kw !== undefined) return '<span class="code-kw">' + kw + '</span>';
+      if (num !== undefined) return '<span class="code-num">' + num + '</span>';
+      return m;
+    });
+  }
+
+  function renderCodeBlock(code, filename){
+    return '<div class="code-block">'+
+      '<div class="code-block-head">'+
+        '<span class="dot" style="background:#ff5f57"></span>'+
+        '<span class="dot" style="background:#febc2e"></span>'+
+        '<span class="dot" style="background:#28c840"></span>'+
+        '<span class="fname">'+esc(filename||"Example.java")+'</span>'+
+      '</div>'+
+      '<pre>'+highlightCode(code)+'</pre>'+
+    '</div>';
+  }
+
   /* ---------------- sidebar ---------------- */
   function renderSidebar(){
     document.getElementById("navOverview").classList.toggle("active", view === "overview" && !query);
@@ -788,7 +899,11 @@
     topbarActions.appendChild(markBtn);
     topbarActions.appendChild(menuToggleClone());
 
-    let html = '<div class="cat-detail-head">'+
+    let html = '<div class="cat-detail-wrap">';
+
+    // ---- main article column ----
+    html += '<div class="cat-detail-main">';
+    html += '<div class="cat-detail-head">'+
       '<div class="icon-badge" style="background:'+cat.color+'">'+initials(cat.title)+'</div>'+
       '<div><h2>'+esc(cat.title)+'</h2><div class="meta">'+t+' topic'+(t===1?"":"s")+' · '+d+' of '+t+' completed</div></div>'+
     '</div>';
@@ -796,18 +911,42 @@
     cat.topics.forEach((topic, idx)=>{
       const key = topicKey(cat.id, idx);
       const isDone = !!done[key];
-      html += '<div class="topic-card'+(isDone?" done":"")+'" style="'+(isDone?"":("border-left-color:"+cat.color))+'">'+
-        '<div class="topic-head">'+
-          '<div class="topic-title-row"><span class="topic-num">'+String(idx+1).padStart(2,"0")+'</span><h3 class="topic-title">'+esc(topic.title)+'</h3></div>'+
-          '<label class="done-check"><input type="checkbox" data-key="'+key+'" '+(isDone?"checked":"")+'/> done</label>'+
+      html += '<div class="topic-card'+(isDone?" done":"")+'" style="animation-delay:'+Math.min(idx*0.05,0.4)+'s" id="'+key+'">'+
+        '<div class="topic-card-inner">'+
+          '<div class="topic-head">'+
+            '<div class="topic-title-row">'+
+              '<span class="topic-num">'+String(idx+1).padStart(2,"0")+'</span>'+
+              '<span class="dot"></span>'+
+              '<h3 class="topic-title">'+esc(topic.title)+'</h3>'+
+            '</div>'+
+            '<label class="done-check"><input type="checkbox" data-key="'+key+'" '+(isDone?"checked":"")+'/><span class="box">'+(isDone?'<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.7L8 1" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</span> Done</label>'+
+          '</div>'+
+          '<div class="topic-body"><ul class="points">'+topic.points.map(p=>'<li>'+esc(p)+'</li>').join("")+'</ul>'+
+          (topic.code ? renderCodeBlock(topic.code, cat.id+"_"+(idx+1)+".java") : "") +
+          (topic.diagram ? topic.diagram : "") +
+          '</div>'+
         '</div>'+
-        '<ul class="points">'+topic.points.map(p=>'<li>'+esc(p)+'</li>').join("")+'</ul>'+
-        (topic.qa && topic.qa.length ?
-          '<details class="qa-block"><summary><svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg> Sample interview Q&amp;A <span class="qcount">('+topic.qa.length+')</span></summary>'+
-          topic.qa.map(pair=>'<div class="qa-item"><div class="qa-q">Q: '+esc(pair.q)+'</div><div class="qa-a">A: '+esc(pair.a)+'</div></div>').join("")+
-          '</details>' : "") +
       '</div>';
     });
+    html += '</div>'; // end cat-detail-main
+
+    // ---- right checklist sidebar ----
+    const cp = pct(d,t);
+    html += '<div class="cat-checklist">'+
+      '<div class="cat-checklist-head"><span class="cat-checklist-title">Checklist</span><span class="cat-checklist-count">'+d+' / '+t+'</span></div>'+
+      '<div class="cat-checklist-bar"><div style="width:'+cp+'%;background:'+cat.color+'"></div></div>';
+    cat.topics.forEach((topic, idx)=>{
+      const key = topicKey(cat.id, idx);
+      const isDone = !!done[key];
+      html += '<label class="checklist-row'+(isDone?" done":"")+'" data-jump="'+key+'">'+
+        '<input type="checkbox" data-key="'+key+'" '+(isDone?"checked":"")+' style="display:none" />'+
+        '<span class="checklist-box">'+(isDone?'<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.7L8 1" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</span>'+
+        '<span class="checklist-label">'+esc(topic.title)+'</span>'+
+      '</label>';
+    });
+    html += '</div>'; // end cat-checklist
+
+    html += '</div>'; // end cat-detail-wrap
 
     contentEl.innerHTML = html;
 
@@ -821,6 +960,15 @@
         done[key] = checked; saveDone(); render();
         pushProgress(key, checked);
       };
+    });
+
+    contentEl.querySelectorAll('.checklist-row[data-jump]').forEach(row=>{
+      row.addEventListener("click", (e)=>{
+        if (e.target.tagName === "INPUT") return;
+        const key = row.getAttribute("data-jump");
+        const target = document.getElementById(key);
+        if (target) target.scrollIntoView({behavior:"smooth", block:"start"});
+      });
     });
   }
 
