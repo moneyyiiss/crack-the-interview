@@ -1,0 +1,100 @@
+export default {
+  id: 'jvm',
+  title: 'JVM & Memory Management',
+  color: '#4C1D95',
+  topics: [
+    {
+      title: 'JVM Architecture',
+      points: [
+        'Class Loader Subsystem — loads, links (verify/prepare/resolve), and initializes .class files into memory.',
+        'Runtime Data Areas — Method Area, Heap, Stack (one per thread), PC Registers, Native Method Stack.',
+        'Execution Engine — interpreter + JIT compiler that actually run the bytecode; includes the Garbage Collector.',
+        'Native Interface (JNI) — lets Java code call native (C/C++) libraries when needed.',
+        'The JVM specification is fixed; the actual implementation (HotSpot, OpenJ9, GraalVM) can differ in performance characteristics.',
+      ],
+      qa: [],
+      code: '// Class Loader  -> loads .class files into memory\n// Runtime Data Areas -> Heap, Stack, Metaspace, PC Registers, Native Method Stack\n// Execution Engine  -> Interpreter + JIT Compiler + Garbage Collector\n\n// javac Foo.java -> Foo.class -> ClassLoader -> bytecode verified -> Execution Engine runs it',
+      flow: { type: 'pipeline', steps: ['Class Loader', 'Runtime Data Areas', 'Execution Engine', 'Native OS Threads'] },
+    },
+    {
+      title: 'Memory Areas: Heap, Stack & Metaspace',
+      points: [
+        'Heap — shared across all threads; stores all objects and arrays; this is what the Garbage Collector manages.',
+        'Stack — one per thread; stores method call frames, local variables, and partial results; a variable here holds primitives directly or object references (the object itself is still on the heap).',
+        'Metaspace (replaced PermGen since Java 8) — stores class metadata (method bytecode, field/method info), grows automatically off native memory instead of a fixed max.',
+        'Heap is further divided into Young Generation (Eden + two Survivor spaces) and Old Generation — new objects start in Eden and get promoted to Old Gen if they survive enough GC cycles.',
+        'StackOverflowError happens when a thread\'s stack runs out of space — commonly uncontrolled/infinite recursion.',
+      ],
+      qa: [],
+      code: '// Heap    — all objects & arrays live here, shared across threads, GC-managed\n// Stack   — one per thread; each method call pushes a frame (locals + partial results)\n// Metaspace — class metadata (replaced PermGen since Java 8), grows into native memory\n\nvoid recurse(int n) { recurse(n + 1); }   // eventually: StackOverflowError (stack, not heap)\nList<int[]> leak = new ArrayList<>();\nwhile (true) leak.add(new int[1_000_000]); // eventually: OutOfMemoryError: Java heap space',
+      flow: { type: 'grid', items: [
+        { label: 'Heap', sub: 'objects, shared' },
+        { label: 'Stack', sub: 'per-thread frames' },
+        { label: 'Metaspace', sub: 'class metadata' },
+      ] },
+    },
+    {
+      title: 'Garbage Collection Basics',
+      points: [
+        'GC automatically reclaims memory occupied by objects no longer reachable from any live reference (the "root set": stack variables, static fields, etc.).',
+        'Generational hypothesis: most objects die young — so GC focuses more effort on the small, fast-collected Young Generation than the larger Old Generation.',
+        'Minor GC cleans the Young Generation (fast, frequent); Major/Full GC cleans the Old Generation (slower, less frequent, causes longer pauses).',
+        'You can\'t force GC to run — System.gc() is only a hint/suggestion to the JVM, not a guarantee.',
+        "finalize() (deprecated since Java 9) used to run before an object was collected — modern code should use try-with-resources / Cleaner instead.",
+      ],
+      qa: [],
+      code: '// Young Gen (Eden + 2 Survivor spaces) — new objects, collected often, fast "minor GC"\n// Old Gen — long-lived objects promoted from Young Gen, collected less often, "major GC"\n// An object survives enough minor GCs -> gets promoted to Old Gen\n\n// GC roots (things that start reachability): local variables, static fields, active threads\n// Unreachable from any GC root = eligible for collection',
+      flow: { type: 'pipeline', steps: ['Eden (new objects)', 'Survivor S0/S1', 'aged enough?', 'Old Generation'] },
+    },
+    {
+      title: 'GC Algorithms & Common Questions',
+      points: [
+        'Serial GC — single-threaded, simplest, good for small apps/single-core environments.',
+        'Parallel GC — multiple threads for collection, focuses on throughput; was the default in older Java versions.',
+        'G1 (Garbage First) — default since Java 9; splits the heap into regions, aims to meet a target pause-time goal while balancing throughput.',
+        'ZGC / Shenandoah — very low-pause (sub-millisecond) collectors designed for huge heaps, available in modern JDKs.',
+        "Memory leak in Java — even with GC, objects can 'leak' if something (e.g. a static collection, an unclosed listener) keeps holding a reference to objects that are logically no longer needed.",
+      ],
+      qa: [],
+      code: '// Serial GC   — single-threaded, best for small heaps / single-core\n// Parallel GC — multi-threaded, throughput-focused, older Java default\n// G1 GC       — region-based, balances throughput & pause time, default since Java 9\n// ZGC / Shenandoah — sub-millisecond pauses, built for very large heaps\n\n// java -XX:+UseG1GC -Xmx4g Main   // pick a collector + max heap size',
+      flow: { type: 'compare', columns: [
+        { title: 'Serial / Parallel', points: ['Simple / throughput-focused', 'Longer pauses OK'] },
+        { title: 'G1 (default)', points: ['Region-based', 'Balances pause + throughput'] },
+        { title: 'ZGC / Shenandoah', points: ['Sub-ms pauses', 'Huge heaps'] },
+      ] },
+    },
+    {
+      title: 'Memory Leaks in Java (Despite Garbage Collection)',
+      points: [
+        'A memory leak in a garbage-collected language means objects are still technically reachable (so GC can\'t reclaim them) but are logically never used again — "unintentional object retention".',
+        'Classic causes: static collections that keep growing (a cache with no eviction policy), unregistered listeners/callbacks that outlive what registered them, inner classes holding an implicit reference to a long-dead outer instance, and un-cleared ThreadLocal values in pooled threads.',
+        'Long-lived caches without a size/expiry policy are one of the most common real-world leak sources — solve with a bounded cache (LinkedHashMap-based LRU, or a library like Caffeine) or weak references.',
+        'WeakReference / WeakHashMap let the GC collect an object as soon as nothing OTHER than the weak reference points to it — useful for caches that shouldn\'t prevent collection.',
+        'Heap dumps (jmap) + profilers (VisualVM, Eclipse MAT) are the standard tools for diagnosing exactly which object graph is being unintentionally retained.',
+      ],
+      qa: [{ q: 'How can a Java program leak memory even though it has automatic garbage collection?', a: "GC only frees objects with zero reachable references from a GC root; if code keeps an unnecessary reference alive (a growing static cache, a forgotten listener registration), that object stays technically reachable and is never collected — GC correctly does its job, the leak is a logic bug, not a GC failure." }],
+      code: '// Classic leak: a static cache that never evicts\nstatic Map<String, byte[]> cache = new HashMap<>();\nstatic void cacheResult(String key, byte[] data) {\n    cache.put(key, data);   // grows forever — nothing ever removes old entries\n}\n\n// Fix: bounded LRU cache, or WeakHashMap so entries can be GC\'d when otherwise unused\nMap<String, byte[]> weakCache = new WeakHashMap<>();',
+      flow: { type: 'grid', items: [
+        { label: 'Unbounded static cache', sub: 'never evicts' },
+        { label: 'Forgotten listeners', sub: 'outlive their owner' },
+        { label: 'Uncleared ThreadLocal', sub: 'in pooled threads' },
+      ] },
+    },
+    {
+      title: 'ClassLoaders & the Class Loading Process',
+      points: [
+        'Three built-in loaders in a hierarchy: Bootstrap (loads core java.* classes, written in native code), Platform/Extension (loads JDK extension classes), Application/System (loads your application\'s classpath classes).',
+        "Delegation model — a class loader first asks its parent to try loading a class before attempting itself, which is why you can't accidentally shadow java.lang.String with your own class of the same name.",
+        'Class loading phases: Loading (find and read the .class bytes) → Linking (Verify bytecode correctness, Prepare fields with defaults, Resolve symbolic references) → Initialization (run static initializers and static field assignments).',
+        'A class is loaded lazily — the JVM only loads it the first time it\'s actually referenced/used, not all at once at startup.',
+        'Custom class loaders (extending ClassLoader) enable plugin systems, hot-reloading, and isolated classpaths — how application servers keep separate deployed apps from clashing classes.',
+      ],
+      qa: [],
+      code: '// Bootstrap ClassLoader   -> loads core JDK classes (java.lang.*), written in native code\n// Platform ClassLoader    -> loads JDK extension classes\n// Application ClassLoader -> loads your app\'s classes from the classpath\n\n// Delegation model: a loader always asks its PARENT first before loading itself\n// -> prevents you from accidentally shadowing java.lang.String, for example\n\nClass.forName("com.example.MyClass");   // explicitly triggers loading + initialization',
+      flow: { type: 'tree', root: 'Bootstrap ClassLoader', children: [
+        { label: 'Platform ClassLoader', sub: 'JDK extensions' },
+        { label: 'Application ClassLoader', sub: 'your classpath' },
+      ] },
+    },
+  ],
+};
